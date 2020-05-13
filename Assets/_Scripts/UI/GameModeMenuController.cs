@@ -10,6 +10,7 @@
 
     public sealed class GameModeMenuController : SerializedMonoBehaviour
     {
+        #region Public Types
         [System.Serializable]
         public sealed class GameModeSettings
         {
@@ -22,7 +23,9 @@
                 Players = players;
             }
         }
+        #endregion Public Types
 
+        #region Public Methods
         public void OnStartGameClicked()
         {
             //todo: maybe get reference to active toggles from groups
@@ -34,10 +37,15 @@
             //todo: send settings to gameplay controller
             //return new GameModeSettings(_RoundsToggleValues[activeRounds], _PlayersToggleValues[activePlayers]);
         }
+        #endregion Public Methods
 
+        #region Inspector Variables
         [SerializeField, FoldoutGroup("References")] private Dictionary<Toggle, int> _RoundsToggleValues;
         [SerializeField, FoldoutGroup("References")] private Dictionary<Toggle, int> _PlayersToggleValues;
+        #endregion Inspector Variables
 
+        #region Private Variables
         [Inject] private GameModeController _GameModeController;
+        #endregion Private Variables
     }
 }
