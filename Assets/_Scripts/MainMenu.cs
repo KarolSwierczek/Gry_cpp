@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
-
+    /*
     public GameObject StartMenu;
     public GameObject GameOptionsMenu;
 
@@ -68,5 +68,6 @@ public class MainMenu : MonoBehaviour
         StartMenu.active = false;
         GameOptionsMenu.active = true;
     }
+    */
 }
 
