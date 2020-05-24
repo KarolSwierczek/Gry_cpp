@@ -1,61 +1,41 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class Card : MonoBehaviour
+﻿namespace cpp.Sen.Gameplay
 {
+    using System;
+    using UnityEngine;
 
-    public GameObject deckPositon;
-    public GameObject discardPilePosition;
-
-    private List <Transform> Deck = new List<Transform>();
-    private List<Transform> DiscardPile = new List<Transform>();
-
-    private int[] myCardPull = new int[4];
-    private int[] firstOpponentCardPull = new int[4];
-    private int[] secondOpponentCardPull = new int[4];
-    private int[] thirdOpponentCardPull = new int[4];
-
-    
-    // Start is called before the first frame update
-    void Start()
+    public sealed class Card
     {
-        int children = transform.childCount;
-
-        for (int b = 0; b < children; b++)
+        #region Public Types
+        public sealed class OnCardMovedArgs : EventArgs
         {
-            transform.GetChild(b).position = deckPositon.transform.position + new Vector3(0.0f, 2.0f * b, 0.0f);
-            transform.GetChild(b).rotation = deckPositon.transform.rotation;
+            public Vector3 TargetPosition { get; }
+            public bool Flip { get; }
 
-            Deck.Add(transform.GetChild(b));
+            public OnCardMovedArgs(Vector3 targetPosition, bool flip = false)
+            {
+                TargetPosition = targetPosition;
+                Flip = flip;
+            }
         }
 
-        foreach (Transform child in transform)
+        public sealed class OnCardFlippedArgs : EventArgs
         {
-            Deck.Add(child);
         }
+        #endregion Public Types
 
-        shuffleDeck();
+        #region Public Variables
+        public int Value { get; }
+        public bool InAnimation { get; set; }
 
-        int a = 2 + 1;
-    }
+        public event EventHandler<OnCardMovedArgs> OnCardMoved;
+        public event EventHandler<OnCardFlippedArgs> OnCardFlipped;
+        #endregion Public Variables
 
-    private void shuffleDeck()
-    {
-        var count = Deck.Count;
-        var last = count - 1;
-        for (var i = 0; i < last; ++i)
+        #region Public Methods
+        public Card(int value)
         {
-            var r = UnityEngine.Random.Range(i, count);
-            var tmp = Deck[i];
-            Deck[i] = Deck[r];
-            Deck[r] = tmp;
+            Value = value;
         }
-    }
-    
-    // Update is called once per frame
-    void Update()
-    {
-        
+        #endregion Public Methods
     }
 }
