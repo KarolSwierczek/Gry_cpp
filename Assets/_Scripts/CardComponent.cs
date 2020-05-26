@@ -6,6 +6,14 @@
     public sealed class CardComponent : MonoBehaviour
     {
         #region Public Methods
+        public void Initialize(Card card)
+        {
+            _Card = card;
+
+            _Card.OnCardMoved += OnCardMoved;
+            _Card.OnCardFlipped += OnCardFlipped;
+        }
+
         public void OnAnimationStarted()
         {
             _Card.InAnimation = true;
@@ -18,13 +26,7 @@
         #endregion Public Methods
 
         #region Unity Methods
-        private void OnEnable()
-        {
-            _Card.OnCardMoved += OnCardMoved;
-            _Card.OnCardFlipped += OnCardFlipped;
-        }
-
-        private void OnDisable()
+        private void OnDestroy()
         {
             _Card.OnCardMoved -= OnCardMoved;
             _Card.OnCardFlipped -= OnCardFlipped;
@@ -32,8 +34,8 @@
         #endregion Unity Methods
 
         #region Private Variables
-        private readonly Card _Card; //todo: probably should be public
-        [Inject] private CardAnimator _Animator;
+        private Card _Card;
+        [Inject] private CardAnimationController _Animator;
         #endregion Private Variables
 
         #region Private Methods

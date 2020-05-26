@@ -1,7 +1,6 @@
 ﻿namespace cpp.Sen.Gameplay
 {
     using System;
-    using UnityEngine;
 
     public sealed class GameModeController
     {

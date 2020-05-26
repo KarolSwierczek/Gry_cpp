@@ -1,36 +1,38 @@
 ﻿namespace cpp.Sen.Gameplay
 {
     using Presets;
+    using MEC;
     using System.Collections.Generic;
     using UnityEngine;
-    using MEC;
-    using Sirenix.OdinInspector;
+    using Zenject;
 
-    public sealed class CardAnimator : MonoBehaviour
+    public sealed class CardAnimationController
     {
         #region Public Methods
-        [Button]
+        public void Test()
+        {
+            Debug.Log("test");
+        }
+
         public void MoveCard(CardComponent card, Vector3 targetPosition)
         {
             Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, _Settings.MovementSpeed));
         }
 
-        [Button]
         public void FlipCard(CardComponent card)
         {
             Timing.RunCoroutine(FlipCardCoroutine(card, _Settings.FlipDuration));
         }
 
-        [Button]
         public void MoveAndFlipCard(CardComponent card, Vector3 targetPosition)
         {
             Timing.RunCoroutine(MoveAndFlipCardCoroutine(card, targetPosition, _Settings.MovementSpeed, _Settings.FlipDuration));
         }
         #endregion Public Methods
 
-        #region Inspector Variables
-        private readonly AnimationSettings _Settings;
-        #endregion Inspector Variables
+        #region Private Variables
+        [Inject] private readonly AnimationSettings _Settings;
+        #endregion Private Variables
 
         #region Private Methods
         private IEnumerator<float> MoveCardCoroutine(CardComponent card, Vector3 targetPostion, float speed)

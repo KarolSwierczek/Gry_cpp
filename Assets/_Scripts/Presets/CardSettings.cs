@@ -11,14 +11,14 @@
         public sealed class CardPreset
         {
             public int Value;
-            public Sprite Graphic;
+            public GameObject Prefab;
         }
         #endregion Public Types
 
         #region Public Methods
-        public Sprite GetCardGraphic(int value)
+        public GameObject GetCardPrefab(int value)
         {
-            return _Cards.Find(x => x.Value == value).Graphic;
+            return _Cards.Find(x => x.Value == value).Prefab;
         }
 
         #endregion Public Methods

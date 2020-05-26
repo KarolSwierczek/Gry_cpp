@@ -11,7 +11,7 @@
             public Vector3 TargetPosition { get; }
             public bool Flip { get; }
 
-            public OnCardMovedArgs(Vector3 targetPosition, bool flip = false)
+            public OnCardMovedArgs(Vector3 targetPosition, bool flip)
             {
                 TargetPosition = targetPosition;
                 Flip = flip;
@@ -35,6 +35,16 @@
         public Card(int value)
         {
             Value = value;
+        }
+
+        public void MoveCard(Vector3 position, bool flip = false)
+        {
+            OnCardMoved?.Invoke(this, new OnCardMovedArgs(position, flip));
+        }
+
+        public void FlipCard()
+        {
+            OnCardFlipped?.Invoke(this, new OnCardFlippedArgs());
         }
         #endregion Public Methods
     }
