@@ -10,6 +10,7 @@
         {
             _Card = card;
 
+            _Card.OnCardAlligned += OnCardAlligned;
             _Card.OnCardMoved += OnCardMoved;
             _Card.OnCardFlipped += OnCardFlipped;
         }
@@ -28,6 +29,7 @@
         #region Unity Methods
         private void OnDestroy()
         {
+            _Card.OnCardAlligned -= OnCardAlligned;
             _Card.OnCardMoved -= OnCardMoved;
             _Card.OnCardFlipped -= OnCardFlipped;
         }
@@ -39,6 +41,11 @@
         #endregion Private Variables
 
         #region Private Methods
+        private void OnCardAlligned(object sender, Card.OnCardAllignedArgs args)
+        {
+            _Animator.AllignCard(this, args.ForwardDirection);
+        }
+
         private void OnCardMoved(object sender, Card.OnCardMovedArgs args)
         {
             var targetPosition = args.TargetPosition;

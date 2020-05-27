@@ -82,7 +82,8 @@
 
         private IEnumerator<float> MoveAndFlipCardCoroutine(CardComponent card, Vector3 targetPosition, Vector3 forwardDirection, float movementSpeed, float flipDuration)
         {
-            yield return Timing.WaitUntilDone(Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, forwardDirection, movementSpeed)));
+            Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, forwardDirection, movementSpeed));
+            yield return Timing.WaitForSeconds(1f); //todo: rethink this animation and move delay to settings
             Timing.RunCoroutine(FlipCardCoroutine(card, flipDuration));
         }
         #endregion Private Methods

@@ -8,6 +8,7 @@
         public enum GameMode
         {
             Menu,
+            Setup,
             Game,
             WakeUp,
         }

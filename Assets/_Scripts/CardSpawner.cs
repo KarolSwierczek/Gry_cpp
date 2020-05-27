@@ -16,6 +16,8 @@
 
         public List<Card> SpawnCards(int count, Transform parent)
         {
+            if(count > _AvailableCardList.Count) { throw new System.ArgumentException("Trying to spawn " + count + " cards but there's only " + _AvailableCardList.Count + " cards available!"); }
+
             var result = new List<Card>();
 
             for(var i = 0; i < count; i++)
