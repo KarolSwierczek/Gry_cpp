@@ -9,32 +9,36 @@
         public sealed class OnCardsAddedArgs : EventArgs
         {
             public List<Card> Cards { get; }
+            public List<Card> OtherCards { get; }
 
-            public OnCardsAddedArgs(List<Card> cards)
+            public OnCardsAddedArgs(List<Card> cards, List<Card> otherCards)
             {
                 Cards = cards;
+                OtherCards = otherCards;
             }
         }
 
         public sealed class OnCardAddedArgs : EventArgs
         {
             public Card Card { get; }
+            public List<Card> OtherCards { get; }
 
-            public OnCardAddedArgs(Card card)
+            public OnCardAddedArgs(Card card, List<Card> otherCards)
             {
                 Card = card;
+                OtherCards = otherCards;
             }
         }
 
         public sealed class OnCardRemovedArgs : EventArgs
         {
             public Card Card { get; }
-            public List<Card> RemainingCards { get; }
+            public List<Card> OtherCards { get; }
 
-            public OnCardRemovedArgs(Card card, List<Card> remainingCards)
+            public OnCardRemovedArgs(Card card, List<Card> otherCards)
             {
                 Card = card;
-                RemainingCards = remainingCards;
+                OtherCards = otherCards;
             }
         }
         #endregion Public Types
@@ -56,23 +60,25 @@
 
         public void AddCards(List<Card> cards)
         {
+            var other = _Hand;
             _Hand.AddRange(cards);
             foreach(var card in cards)
             {
-                card.Interactable = true;
+                if (!IsInspect) { card.Interactable = true; }
                 card.OnInteraction += OnInteraction;
             }
 
-            OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards));
+            OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards, _Hand));
         }
 
         public void AddCard(Card card)
         {
+            var other = _Hand;
             _Hand.Add(card);
-            card.Interactable = true;
+            if (!IsInspect) { card.Interactable = true; }
             card.OnInteraction += OnInteraction;
 
-            OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
+            OnCardAdded?.Invoke(this, new OnCardAddedArgs(card, _Hand));
         }
 
         public Card RemoveCard(Card card)

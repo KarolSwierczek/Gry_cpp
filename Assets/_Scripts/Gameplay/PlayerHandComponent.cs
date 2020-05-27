@@ -38,23 +38,19 @@
         #region Private Methods
         private void OnCardsAdded(object sender, PlayerHand.OnCardsAddedArgs args)
         {
+            RefreshCardPositions(args.OtherCards);
             Timing.RunCoroutine(AddCardsCoroutine(args.Cards));
         }
 
         private void OnCardAdded(object sender, PlayerHand.OnCardAddedArgs args)
         {
+            RefreshCardPositions(args.OtherCards);
             args.Card.MoveCard(GetNextCardPosition(), transform.forward, args.Card.IsCovered == _Hand.IsInspect);
         }
 
         private void OnCardRemoved(object sender, PlayerHand.OnCardRemovedArgs args)
         {
-            var count = _Hand.Count;
-
-            foreach (var card in args.RemainingCards)
-            {
-                card.MoveCard(GetNextCardPosition(count), transform.forward);
-                count--;
-            }
+            RefreshCardPositions(args.OtherCards);
         }
 
         private Vector3 GetNextCardPosition(int numOfCardsAdded = 1)
@@ -81,6 +77,17 @@
                 count--;
 
                 yield return Timing.WaitForSeconds(_Settings.CardDelay - Time.deltaTime);
+            }
+        }
+
+        private void RefreshCardPositions(List<Card> cards)
+        {
+            var count = cards.Count;
+
+            foreach(var card in cards)
+            {
+                card.MoveCard(GetNextCardPosition(count), transform.forward, card.IsCovered == _Hand.IsInspect);
+                count--;
             }
         }
         #endregion Private Methods
