@@ -9,14 +9,14 @@
     public sealed class CardAnimationController
     {
         #region Public Methods
-        public void Test()
+        public void AllignCard(CardComponent card, Vector3 forwardDirection)
         {
-            Debug.Log("test");
+            card.transform.rotation = Quaternion.LookRotation(forwardDirection, card.transform.up);
         }
 
-        public void MoveCard(CardComponent card, Vector3 targetPosition)
+        public void MoveCard(CardComponent card, Vector3 targetPosition, Vector3 forwardDirection)
         {
-            Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, _Settings.MovementSpeed));
+            Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, forwardDirection, _Settings.MovementSpeed));
         }
 
         public void FlipCard(CardComponent card)
@@ -24,9 +24,9 @@
             Timing.RunCoroutine(FlipCardCoroutine(card, _Settings.FlipDuration));
         }
 
-        public void MoveAndFlipCard(CardComponent card, Vector3 targetPosition)
+        public void MoveAndFlipCard(CardComponent card, Vector3 targetPosition, Vector3 forwardDirection)
         {
-            Timing.RunCoroutine(MoveAndFlipCardCoroutine(card, targetPosition, _Settings.MovementSpeed, _Settings.FlipDuration));
+            Timing.RunCoroutine(MoveAndFlipCardCoroutine(card, targetPosition, forwardDirection, _Settings.MovementSpeed, _Settings.FlipDuration));
         }
         #endregion Public Methods
 
@@ -35,20 +35,25 @@
         #endregion Private Variables
 
         #region Private Methods
-        private IEnumerator<float> MoveCardCoroutine(CardComponent card, Vector3 targetPostion, float speed)
+        private IEnumerator<float> MoveCardCoroutine(CardComponent card, Vector3 targetPostion, Vector3 forwardDirection, float speed)
         {
             var time = 0f;
+            var startRotation = card.transform.rotation;
             var startPosition = card.transform.position;
+
             var duration = (targetPostion - startPosition).magnitude / speed;
+            var targetRotation = Quaternion.LookRotation(forwardDirection, card.transform.up);
 
             card.OnAnimationStarted();
 
             while (time <= duration)
             {
                 var t = _Settings.MoveCurve.Evaluate(time / duration);
-                card.transform.position = Vector3.Lerp(startPosition, targetPostion, t);
-                time += Time.deltaTime;
 
+                card.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+                card.transform.position = Vector3.Lerp(startPosition, targetPostion, t);
+
+                time += Time.deltaTime;
                 yield return Timing.WaitForOneFrame;
             }
 
@@ -75,9 +80,9 @@
             card.OnAnimationEnded();
         }
 
-        private IEnumerator<float> MoveAndFlipCardCoroutine(CardComponent card, Vector3 targetPosition, float movementSpeed, float flipDuration)
+        private IEnumerator<float> MoveAndFlipCardCoroutine(CardComponent card, Vector3 targetPosition, Vector3 forwardDirection, float movementSpeed, float flipDuration)
         {
-            yield return Timing.WaitUntilDone(Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, movementSpeed)));
+            yield return Timing.WaitUntilDone(Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, forwardDirection, movementSpeed)));
             Timing.RunCoroutine(FlipCardCoroutine(card, flipDuration));
         }
         #endregion Private Methods

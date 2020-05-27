@@ -2,37 +2,47 @@
 {
     using UnityEngine;
     using Presets;
-    using MEC;
     using System.Collections.Generic;
+    using Zenject;
 
-    public class CardSpawner : MonoBehaviour
+    public sealed class CardSpawner
     {
-        [SerializeField] private CardSettings _Settings;
-
-        private void Start()
+        #region Public Methods
+        public CardSpawner()
         {
-            Timing.RunCoroutine(SpawnStackCoroutine());
+            _AvailableCardList = new List<int>();
+            _AvailableCardList.AddRange(_Settings.CardValueList);
         }
 
-        private Card SpawnCard(int value)
+        public List<Card> SpawnCards(int count, Transform parent)
+        {
+            var result = new List<Card>();
+
+            for(var i = 0; i < count; i++)
+            {
+                var randomIndex = Random.Range(0, _AvailableCardList.Count);
+                result.Add(SpawnCard(_AvailableCardList[randomIndex], parent));
+                _AvailableCardList.RemoveAt(randomIndex);
+            }
+
+            return result;
+        }
+        #endregion Public Methods
+
+        #region Private Variables
+        [Inject] private readonly CardSettings _Settings;
+        private List<int> _AvailableCardList;
+        #endregion Private Variables
+
+        #region Private Methods
+        private Card SpawnCard(int value, Transform parent)
         {
             var card = new Card(value);
-            var cardComponent = Instantiate(_Settings.GetCardPrefab(value), transform).GetComponent<CardComponent>();
+            var cardComponent = Object.Instantiate(_Settings.GetCardPrefab(value), parent).GetComponent<CardComponent>();
             cardComponent.Initialize(card);
 
             return card;
         }
-
-        private IEnumerator<float> SpawnStackCoroutine()
-        {
-            //todo
-            yield return Timing.WaitForSeconds(0.5f);
-            for (var i = 0; i < 10; i++)
-            {
-                var card = SpawnCard(i);
-                card.MoveCard(new Vector3(0f, 1f + i / 50f, 0f));
-                yield return Timing.WaitForSeconds(0.2f);
-            }
-        }
+        #endregion Private Methods
     }
 }

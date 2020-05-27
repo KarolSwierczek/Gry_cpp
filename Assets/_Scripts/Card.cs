@@ -9,11 +9,13 @@
         public sealed class OnCardMovedArgs : EventArgs
         {
             public Vector3 TargetPosition { get; }
+            public Vector3 ForwardDirection { get; }
             public bool Flip { get; }
 
-            public OnCardMovedArgs(Vector3 targetPosition, bool flip)
+            public OnCardMovedArgs(Vector3 targetPosition, Vector3 forwardDirection, bool flip)
             {
                 TargetPosition = targetPosition;
+                ForwardDirection = forwardDirection;
                 Flip = flip;
             }
         }
@@ -26,6 +28,7 @@
         #region Public Variables
         public int Value { get; }
         public bool InAnimation { get; set; }
+        public bool IsCovered { get; private set; }
 
         public event EventHandler<OnCardMovedArgs> OnCardMoved;
         public event EventHandler<OnCardFlippedArgs> OnCardFlipped;
@@ -35,15 +38,18 @@
         public Card(int value)
         {
             Value = value;
+            IsCovered = true;
         }
 
-        public void MoveCard(Vector3 position, bool flip = false)
+        public void MoveCard(Vector3 position, Vector3 forward, bool flip = false)
         {
-            OnCardMoved?.Invoke(this, new OnCardMovedArgs(position, flip));
+            if (flip) { IsCovered = !IsCovered; }
+            OnCardMoved?.Invoke(this, new OnCardMovedArgs(position, forward, flip));
         }
 
         public void FlipCard()
         {
+            IsCovered = !IsCovered;
             OnCardFlipped?.Invoke(this, new OnCardFlippedArgs());
         }
         #endregion Public Methods

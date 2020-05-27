@@ -42,13 +42,15 @@
         private void OnCardMoved(object sender, Card.OnCardMovedArgs args)
         {
             var targetPosition = args.TargetPosition;
+            var forwardDirection = args.ForwardDirection;
+
             if (args.Flip)
             {
-                _Animator.MoveAndFlipCard(this, targetPosition);
+                _Animator.MoveAndFlipCard(this, targetPosition, forwardDirection);
             }
             else
             {
-                _Animator.MoveCard(this, targetPosition);
+                _Animator.MoveCard(this, targetPosition, forwardDirection);
             }
         }
 
