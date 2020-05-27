@@ -8,14 +8,12 @@
 
     public sealed class GameSetupController : MonoBehaviour
     {
-        //todo: get from main menu
-        private const int _Players = 4;
-        //private const int _Rounds = 10;
-
-        //todo: dimention settings and spawn setting separate
-        private const int _CardsPerPlayer = 4;
-        private const int _CardsTotal = 54;
-
+        #region Unity Methods
+        private void Awake()
+        {
+            _PlayerHands = new PlayerHand[4] { _P1Hand, _P2Hand, _P3Hand, _P4Hand };
+            _PlayerHandTransforms = new Transform[4] { _P1HandTransform, _P2HandTransform, _P3HandTransform, _P4HandTransform };
+        }
         private void OnEnable()
         {
             _GameModeController.OnGameModeChanged += OnGameModeChanged;
@@ -25,43 +23,74 @@
         {
             _GameModeController.OnGameModeChanged -= OnGameModeChanged;
         }
+        #endregion Unity Methods
 
+        #region Inspector Variables
+        //todo: odin groups
         [SerializeField] private CardSpawnSettings _Settings;
 
         [SerializeField] private CardStackComponent _StackPrefab;
-        //[SerializeField] private PlayerHandComponent _HandPrefab;
+        [SerializeField] private PlayerHandComponent _HandPrefab;
 
         [SerializeField] private Transform _CardsParent;
         [SerializeField] private Transform _CoveredStackTransform;
         [SerializeField] private Transform _UncoveredStackTransform;
-        //[SerializeField] private Transform _P1HandTransform;
-        //[SerializeField] private Transform _P2HandTransform;
-        //[SerializeField] private Transform _P3HandTransform;
-        //[SerializeField] private Transform _P4HandTransform;
 
+        [SerializeField] private Transform _P1HandTransform;
+        [SerializeField] private Transform _P2HandTransform;
+        [SerializeField] private Transform _P3HandTransform;
+        [SerializeField] private Transform _P4HandTransform;
+
+
+        #endregion Inspector Variables
+
+        #region Private Variables
         [Inject] private GameModeController _GameModeController;
         [Inject] private CardSpawner _Spawner;
 
         private CardStack _CoveredStack;
         private CardStack _UncoveredStack;
-        //private PlayerHand _P1Hand;
-        //private PlayerHand _P2Hand;
-        //private PlayerHand _P3Hand;
-        //private PlayerHand _P4Hand;
+        private PlayerHand _P1Hand;
+        private PlayerHand _P2Hand;
+        private PlayerHand _P3Hand;
+        private PlayerHand _P4Hand;
 
+
+        private Transform[] _PlayerHandTransforms;
+        private PlayerHand[] _PlayerHands;
+        #endregion Private Variables
+
+        #region Private Methods
         private IEnumerator<float> SetupCoroutine()
         {
+            for(var i = 0; i < _GameModeController.NumOfPlayers; i++)
+            {
+                SpawnPlayerHand(i);
+                yield return Timing.WaitForSeconds(_Settings.HandDelay);
+            }
+
             SpawnCoveredStack();
-            yield return Timing.WaitForSeconds(_Settings.CollectionDelay);
+            yield return Timing.WaitForSeconds(_Settings.StackDelay);
             SpawnUncoveredStack();
-            yield return Timing.WaitForSeconds(_Settings.CollectionDelay);
+            yield return Timing.WaitForSeconds(_Settings.StackDelay);
 
             _GameModeController.Mode = GameModeController.GameMode.Game;
         }
 
+        private void SpawnPlayerHand(int handIndex)
+        {
+            var cards = _Spawner.SpawnCards(_Settings.CardsPerPlayer, _CardsParent);
+            _PlayerHands[handIndex] = new PlayerHand();
+
+            var handComponent = Instantiate(_HandPrefab, _PlayerHandTransforms[handIndex]);
+            handComponent.Initialize(_PlayerHands[handIndex]);
+
+            _PlayerHands[handIndex].AddCards(cards);
+        }
+
         private void SpawnCoveredStack()
         {
-            var count = _CardsTotal - _Players * _CardsPerPlayer;
+            var count = _Settings.CardsTotal - _GameModeController.NumOfPlayers * _Settings.CardsPerPlayer;
             var cards = _Spawner.SpawnCards(count, _CardsParent);
             _CoveredStack = new CardStack(true);
 
@@ -83,7 +112,8 @@
 
         private void OnGameModeChanged(object sender, GameModeController.OnGameModeChangedArgs args)
         {
-            if(args.Mode == GameModeController.GameMode.Game) { Timing.RunCoroutine(SetupCoroutine()); }
+            if(args.Mode == GameModeController.GameMode.Setup) { Timing.RunCoroutine(SetupCoroutine()); }
         }
+        #endregion Private Methods
     }
 }

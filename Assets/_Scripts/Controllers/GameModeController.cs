@@ -1,6 +1,7 @@
 ﻿namespace cpp.Sen.Gameplay
 {
     using System;
+    using UI;
 
     public sealed class GameModeController
     {
@@ -24,6 +25,14 @@
         }
         #endregion Public Types
 
+        #region Public Methods
+        public void SetRoundsAndPlayers(GameModeMenuController.GameModeSettings menuSettings)
+        {
+            NumOfRounds = menuSettings.Rounds;
+            NumOfPlayers = menuSettings.Players;
+        }
+        #endregion Public Methods
+
         #region Public Variables
         public GameMode Mode {
             get { return _Mode; }
@@ -46,6 +55,10 @@
                 OnGameModeChanged?.Invoke(this, new OnGameModeChangedArgs(_Mode));
             }
         }
+
+        public int NumOfRounds { get; private set; }
+        public int NumOfPlayers { get; private set; }
+
 
         public event EventHandler<OnGameModeChangedArgs> OnGameModeChanged;
         #endregion Public Variables

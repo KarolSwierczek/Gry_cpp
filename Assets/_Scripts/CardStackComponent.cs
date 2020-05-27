@@ -48,7 +48,7 @@
         private Vector3 GetNextCardPosition(int numOfCardsAdded = 1)
         {
             if(_Stack.Count <= 0) { throw new System.Exception("Trying to get next card position, but the stack is empty!"); }
-            if(_Stack.Count <= numOfCardsAdded) { throw new System.ArgumentException("Number of cards added is greater than number of cards in stack!"); }
+            if(_Stack.Count < numOfCardsAdded) { throw new System.ArgumentException("Number of cards added is greater than number of cards in stack!"); }
 
             var deltaHeight = (_Stack.Count - numOfCardsAdded + 0.5f) * _Settings.Girth;
 
@@ -69,7 +69,7 @@
                 card.MoveCard(GetNextCardPosition(count), transform.forward, flip);
                 count--;
 
-                yield return Timing.WaitForSeconds(_Settings.Delay - Time.deltaTime);
+                yield return Timing.WaitForSeconds(_Settings.CardDelay - Time.deltaTime);
             }
         }
         #endregion Private Methods

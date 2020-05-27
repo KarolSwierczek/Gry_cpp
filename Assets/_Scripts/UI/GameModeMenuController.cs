@@ -33,9 +33,10 @@
             var activeRounds = _RoundsToggleValues.Keys.FirstOrDefault(x => x.isOn);
             var activePlayers = _PlayersToggleValues.Keys.FirstOrDefault(x => x.isOn);
 
-            _GameModeController.Mode = GameModeController.GameMode.Game;
-            //todo: send settings to gameplay controller
-            //return new GameModeSettings(_RoundsToggleValues[activeRounds], _PlayersToggleValues[activePlayers]);
+            var gameModeSettings = new GameModeSettings(_RoundsToggleValues[activeRounds], _PlayersToggleValues[activePlayers]);
+            _GameModeController.SetRoundsAndPlayers(gameModeSettings);
+
+            _GameModeController.Mode = GameModeController.GameMode.Setup;
         }
         #endregion Public Methods
 

@@ -57,6 +57,9 @@
                 yield return Timing.WaitForOneFrame;
             }
 
+            card.transform.rotation = targetRotation;
+            card.transform.position = targetPostion;
+
             card.OnAnimationEnded();
         }
 
@@ -76,6 +79,8 @@
 
                 yield return Timing.WaitForOneFrame;
             }
+
+            card.transform.rotation = targetRotation;
 
             card.OnAnimationEnded();
         }

@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68048af56a4a9e547966800e77ceeead, type: 3}
   m_Name: CardSpawnSettings
   m_EditorClassIdentifier: 
-  _Width: 0.3
-  _Girth: 0.02
-  _GroupSpawnDelay: 0.1
-  _CollectionSpawnDelay: 2
+  _Width: 0.25
+  _Girth: 0.004
+  _CardSpawnDelay: 0.05
+  _StackSpawnDelay: 4
+  _HandSpawnDelay: 1
+  _CardsPerPlayer: 4
+  _CardsTotal: 54

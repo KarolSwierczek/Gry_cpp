@@ -8,14 +8,14 @@
     public sealed class CardSpawner
     {
         #region Public Methods
-        public CardSpawner()
-        {
-            _AvailableCardList = new List<int>();
-            _AvailableCardList.AddRange(_Settings.CardValueList);
-        }
-
         public List<Card> SpawnCards(int count, Transform parent)
         {
+            if(_AvailableCardList == null)
+            {
+                _AvailableCardList = new List<int>();
+                _AvailableCardList.AddRange(_Settings.CardValueList);
+            }
+
             if(count > _AvailableCardList.Count) { throw new System.ArgumentException("Trying to spawn " + count + " cards but there's only " + _AvailableCardList.Count + " cards available!"); }
 
             var result = new List<Card>();
