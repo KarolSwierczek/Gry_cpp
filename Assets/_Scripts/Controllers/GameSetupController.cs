@@ -41,6 +41,9 @@
         [SerializeField] private Transform _P3HandTransform;
         [SerializeField] private Transform _P4HandTransform;
 
+        [SerializeField] private Transform _InspectHandTransform;
+
+
 
         #endregion Inspector Variables
 
@@ -54,6 +57,7 @@
         private PlayerHand _P2Hand;
         private PlayerHand _P3Hand;
         private PlayerHand _P4Hand;
+        private PlayerHand _InspectHand;
 
 
         private Transform[] _PlayerHandTransforms;
@@ -73,6 +77,7 @@
             yield return Timing.WaitForSeconds(_Settings.StackDelay);
             SpawnUncoveredStack();
             yield return Timing.WaitForSeconds(_Settings.StackDelay);
+            SpawnInspectHand();
 
             _GameModeController.Mode = GameModeController.GameMode.Game;
         }
@@ -108,6 +113,14 @@
             stackComponent.Initialize(_UncoveredStack);
 
             _UncoveredStack.AddCard(_CoveredStack.RemoveCard());
+        }
+
+        private void SpawnInspectHand()
+        {
+            _InspectHand = new PlayerHand();
+
+            var handComponent = Instantiate(_HandPrefab, _InspectHandTransform);
+            handComponent.Initialize(_InspectHand, false);
         }
 
         private void OnGameModeChanged(object sender, GameModeController.OnGameModeChangedArgs args)

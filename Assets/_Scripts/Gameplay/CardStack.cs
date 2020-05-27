@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
 
-    public sealed class PlayerHand //todo: maybe add abstract class for all card collections
+    public sealed class CardStack : ICardCollection
     {
         #region Public Types
         public sealed class OnCardsAddedArgs : EventArgs
@@ -29,12 +29,10 @@
         public sealed class OnCardRemovedArgs : EventArgs
         {
             public Card Card { get; }
-            public List<Card> RemainingCards { get; }
 
-            public OnCardRemovedArgs(Card card, List<Card> remainingCards)
+            public OnCardRemovedArgs(Card card)
             {
                 Card = card;
-                RemainingCards = remainingCards;
             }
         }
         #endregion Public Types
@@ -43,33 +41,40 @@
         public event EventHandler<OnCardsAddedArgs> OnCardsAdded;
         public event EventHandler<OnCardAddedArgs> OnCardAdded;
         public event EventHandler<OnCardRemovedArgs> OnCardRemoved;
-        public int Count => _Hand.Count;
+        public Card TopCard => _Stack.Peek();
+        public int Count => _Stack.Count;
+        public bool IsCovered { get; }
         #endregion Public Variables
 
         #region Public Methods
-
+        public CardStack(bool isCovered)
+        {
+            IsCovered = isCovered;
+        }
 
         public void AddCards(List<Card> cards)
         {
-            _Hand.AddRange(cards);
+            foreach (var card in cards) { _Stack.Push(card); }
             OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards));
         }
 
         public void AddCard(Card card)
         {
-            _Hand.Add(card);
+            _Stack.Push(card);
             OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
         }
 
-        public void RemoveCard(Card card)
+        public Card RemoveCard(Card optional = null)
         {
-            _Hand.Remove(card);
-            OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card, _Hand));
+            var card = _Stack.Pop();
+            OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card));
+
+            return card;
         }
         #endregion Public Methods
 
         #region Private Variables
-        private List<Card> _Hand = new List<Card>();
+        private Stack<Card> _Stack = new Stack<Card>();
         #endregion Private Variables
     }
 }

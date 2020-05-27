@@ -5,16 +5,18 @@
     using MEC;
     using System.Collections.Generic;
 
-    public sealed class PlayerHandComponent : MonoBehaviour
+    public class PlayerHandComponent : MonoBehaviour
     {
         #region Public Methods
-        public void Initialize(PlayerHand hand)
+        public void Initialize(PlayerHand hand, bool isCovered = true)
         {
             _Hand = hand;
 
             _Hand.OnCardsAdded += OnCardsAdded;
             _Hand.OnCardAdded += OnCardAdded;
             _Hand.OnCardRemoved += OnCardRemoved;
+
+            _IsCovered = isCovered;
         }
         #endregion Public Methods
 
@@ -33,6 +35,7 @@
 
         #region Private Variables
         private PlayerHand _Hand;
+        private bool _IsCovered;
         #endregion Private Variables
 
         #region Private Methods
@@ -43,7 +46,7 @@
 
         private void OnCardAdded(object sender, PlayerHand.OnCardAddedArgs args)
         {
-            args.Card.MoveCard(GetNextCardPosition(), transform.forward);
+            args.Card.MoveCard(GetNextCardPosition(), transform.forward, args.Card.IsCovered != _IsCovered);
         }
 
         private void OnCardRemoved(object sender, PlayerHand.OnCardRemovedArgs args)
@@ -77,7 +80,7 @@
 
                 yield return Timing.WaitForOneFrame;
 
-                card.MoveCard(GetNextCardPosition(count), transform.forward);
+                card.MoveCard(GetNextCardPosition(count), transform.forward, card.IsCovered != _IsCovered);
                 count--;
 
                 yield return Timing.WaitForSeconds(_Settings.CardDelay - Time.deltaTime);

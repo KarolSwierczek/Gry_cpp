@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
 
-    public sealed class CardStack
+    public sealed class PlayerHand : ICardCollection
     {
         #region Public Types
         public sealed class OnCardsAddedArgs : EventArgs
@@ -29,10 +29,12 @@
         public sealed class OnCardRemovedArgs : EventArgs
         {
             public Card Card { get; }
+            public List<Card> RemainingCards { get; }
 
-            public OnCardRemovedArgs(Card card)
+            public OnCardRemovedArgs(Card card, List<Card> remainingCards)
             {
                 Card = card;
+                RemainingCards = remainingCards;
             }
         }
         #endregion Public Types
@@ -41,40 +43,41 @@
         public event EventHandler<OnCardsAddedArgs> OnCardsAdded;
         public event EventHandler<OnCardAddedArgs> OnCardAdded;
         public event EventHandler<OnCardRemovedArgs> OnCardRemoved;
-        public Card TopCard => _Stack.Peek();
-        public int Count => _Stack.Count;
-        public bool IsCovered { get; }
+        public int Count => _Hand.Count;
         #endregion Public Variables
 
         #region Public Methods
-        public CardStack(bool isCovered)
-        {
-            IsCovered = isCovered;
-        }
+
 
         public void AddCards(List<Card> cards)
         {
-            foreach (var card in cards) { _Stack.Push(card); }
+            _Hand.AddRange(cards);
             OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards));
         }
 
         public void AddCard(Card card)
         {
-            _Stack.Push(card);
+            _Hand.Add(card);
             OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
         }
 
-        public Card RemoveCard()
+        public Card RemoveCard(Card card)
         {
-            var card = _Stack.Pop();
-            OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card));
+            _Hand.Remove(card);
+            OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card, _Hand));
 
             return card;
+        }
+        public Card RemoveFirstCard()
+        {
+            var card = _Hand[0];
+
+            return RemoveCard(card);
         }
         #endregion Public Methods
 
         #region Private Variables
-        private Stack<Card> _Stack = new Stack<Card>();
+        private List<Card> _Hand = new List<Card>();
         #endregion Private Variables
     }
 }
