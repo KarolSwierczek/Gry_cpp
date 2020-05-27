@@ -3,7 +3,7 @@
     using UnityEngine;
     using Zenject;
 
-    public sealed class CardComponent : MonoBehaviour
+    public sealed class CardComponent : MonoBehaviour, IInteractable
     {
         #region Public Methods
         public void Initialize(Card card)
@@ -64,6 +64,11 @@
         private void OnCardFlipped(object sender, Card.OnCardFlippedArgs args)
         {
             _Animator.FlipCard(this);
+        }
+
+        void IInteractable.Interact()
+        {
+            _Card.Interact();
         }
         #endregion Private Methods
     }

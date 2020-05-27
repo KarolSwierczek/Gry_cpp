@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
 
-    public sealed class PlayerHand : ICardCollection
+    public sealed class PlayerHand : ICardCollection, IInteractableCollection
     {
         #region Public Types
         public sealed class OnCardsAddedArgs : EventArgs
@@ -48,15 +48,20 @@
         #endregion Public Variables
 
         #region Public Methods
-        public PlayerHand(bool isInspect = false)
+        public PlayerHand(InteractionController interaction, bool isInspect = false)
         {
             IsInspect = isInspect;
+            _Interaction = interaction;
         }
 
         public void AddCards(List<Card> cards)
         {
             _Hand.AddRange(cards);
-            cards.ForEach(x => x.Interactable = true);
+            foreach(var card in cards)
+            {
+                card.Interactable = true;
+                card.OnInteraction += OnInteraction;
+            }
 
             OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards));
         }
@@ -65,6 +70,7 @@
         {
             _Hand.Add(card);
             card.Interactable = true;
+            card.OnInteraction += OnInteraction;
 
             OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
         }
@@ -73,6 +79,7 @@
         {
             _Hand.Remove(card);
             card.Interactable = false;
+            card.OnInteraction -= OnInteraction;
 
             OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card, _Hand));
 
@@ -84,10 +91,16 @@
 
             return RemoveCard(card);
         }
+
+        public void OnInteraction(object sender, Card.OnInteractionArgs args)
+        {
+            _Interaction.OnInteraction(args.Card, this, InteractionController.InteractableType.PlayerHand);
+        }
         #endregion Public Methods
 
         #region Private Variables
         private List<Card> _Hand = new List<Card>();
+        private readonly InteractionController _Interaction;
         #endregion Private Variables
     }
 }

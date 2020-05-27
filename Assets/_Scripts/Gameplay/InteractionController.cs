@@ -1,28 +1,13 @@
 ﻿namespace cpp.Sen.Gameplay
 {
-    using System;
-
     public sealed class InteractionController
     {
+        //todo: inject game mode and get info about special cards => modify interactions
         #region Public Types
         public enum InteractableType
         {
             PlayerHand,
             CardStack,
-        }
-
-        public sealed class OnInteractionArgs: EventArgs
-        {
-            public Card Card { get; }
-            public ICardCollection Source { get; }
-            public InteractableType Type { get; }
-
-            public OnInteractionArgs(Card card, ICardCollection source, InteractableType type)
-            {
-                Card = card;
-                Source = source;
-                Type = type;
-            }
         }
         #endregion Public Types
 
@@ -33,14 +18,32 @@
             _Discard = uncoveredStack;
         }
 
-        public void Register (Card card)
+        public void OnInteraction(Card card, ICardCollection source, InteractableType type)
         {
-            //todo maybe separate class for interaction
-        }
+            switch (type)
+            {
+                case InteractableType.CardStack:
+                    {
+                        if (_InspectHand.Count > 0) { break; }
 
-        public void Unregister(Card card)
-        {
-            //todo maybe separate class for interaction
+                        var topCard = source.RemoveCard(default);
+                        _InspectHand.AddCard(topCard);
+
+                        break;
+                    }
+                case InteractableType.PlayerHand:
+                    {
+                        if (_InspectHand.Count < 1) { break; }
+
+                        var selectedCard = source.RemoveCard(card);
+                        _Discard.AddCard(selectedCard);
+
+                        var inspectedCard = _InspectHand.RemoveFirstCard();
+                        source.AddCard(inspectedCard);
+
+                        break;
+                    }
+            }
         }
         #endregion Public Methods
 
@@ -48,35 +51,5 @@
         private PlayerHand _InspectHand;
         private CardStack _Discard;
         #endregion Private Variables
-
-        #region Private Methods
-        private void OnInteraction(object sender, OnInteractionArgs args)
-        {
-            switch (args.Type)
-            {
-                case InteractableType.CardStack:
-                    {
-                        if (_InspectHand.Count > 0) { break; }
-
-                        var topCard = args.Source.RemoveCard(default);
-                        _InspectHand.AddCard(topCard);
-
-                        break;
-                    }
-                case InteractableType.PlayerHand:
-                    {
-                        if(_InspectHand.Count < 1) { break; }
-
-                        var selectedCard = args.Source.RemoveCard(args.Card);
-                        _Discard.AddCard(selectedCard);
-
-                        var inspectedCard = _InspectHand.RemoveFirstCard();
-                        args.Source.AddCard(inspectedCard);
-
-                        break;
-                    }
-            }
-        }
-        #endregion Private Methods
     }
 }

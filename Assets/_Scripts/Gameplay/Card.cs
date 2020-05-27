@@ -33,6 +33,16 @@
         public sealed class OnCardFlippedArgs : EventArgs
         {
         }
+
+        public sealed class OnInteractionArgs : EventArgs
+        {
+            public Card Card { get; }
+
+            public OnInteractionArgs(Card card)
+            {
+                Card = card;
+            }
+        }
         #endregion Public Types
 
         #region Public Variables
@@ -44,6 +54,7 @@
         public event EventHandler<OnCardAllignedArgs> OnCardAlligned;
         public event EventHandler<OnCardMovedArgs> OnCardMoved;
         public event EventHandler<OnCardFlippedArgs> OnCardFlipped;
+        public event EventHandler<OnInteractionArgs> OnInteraction;
         #endregion Public Variables
 
         #region Public Methods
@@ -68,6 +79,12 @@
         {
             IsCovered = !IsCovered;
             OnCardFlipped?.Invoke(this, new OnCardFlippedArgs());
+        }
+
+        public void Interact()
+        {
+            if (!Interactable) { return; }
+            OnInteraction?.Invoke(this, new OnInteractionArgs(this));
         }
         #endregion Public Methods
     }

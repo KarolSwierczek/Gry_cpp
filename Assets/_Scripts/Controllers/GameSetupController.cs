@@ -50,6 +50,7 @@
         #region Private Variables
         [Inject] private GameModeController _GameModeController;
         [Inject] private CardSpawner _Spawner;
+        [Inject] private InteractionController _Interaction;
 
         private CardStack _CoveredStack;
         private CardStack _UncoveredStack;
@@ -75,9 +76,12 @@
 
             SpawnCoveredStack();
             yield return Timing.WaitForSeconds(_Settings.StackDelay);
+
             SpawnUncoveredStack();
             yield return Timing.WaitForSeconds(_Settings.StackDelay);
+
             SpawnInspectHand();
+            _Interaction.Initialize(_InspectHand, _UncoveredStack);
 
             _GameModeController.Mode = GameModeController.GameMode.Game;
         }
@@ -85,7 +89,7 @@
         private void SpawnPlayerHand(int handIndex)
         {
             var cards = _Spawner.SpawnCards(_Settings.CardsPerPlayer, _CardsParent);
-            _PlayerHands[handIndex] = new PlayerHand();
+            _PlayerHands[handIndex] = new PlayerHand(_Interaction);
 
             var handComponent = Instantiate(_HandPrefab, _PlayerHandTransforms[handIndex]);
             handComponent.Initialize(_PlayerHands[handIndex]);
@@ -97,7 +101,7 @@
         {
             var count = _Settings.CardsTotal - _GameModeController.NumOfPlayers * _Settings.CardsPerPlayer;
             var cards = _Spawner.SpawnCards(count, _CardsParent);
-            _CoveredStack = new CardStack(true);
+            _CoveredStack = new CardStack(_Interaction, true);
 
             var stackComponent = Instantiate(_StackPrefab, _CoveredStackTransform);
             stackComponent.Initialize(_CoveredStack);
@@ -107,7 +111,7 @@
 
         private void SpawnUncoveredStack()
         {
-            _UncoveredStack = new CardStack(false);
+            _UncoveredStack = new CardStack(_Interaction, false);
 
             var stackComponent = Instantiate(_StackPrefab, _UncoveredStackTransform);
             stackComponent.Initialize(_UncoveredStack);
@@ -117,7 +121,7 @@
 
         private void SpawnInspectHand()
         {
-            _InspectHand = new PlayerHand(true);
+            _InspectHand = new PlayerHand(_Interaction, true);
 
             var handComponent = Instantiate(_HandPrefab, _InspectHandTransform);
             handComponent.Initialize(_InspectHand);

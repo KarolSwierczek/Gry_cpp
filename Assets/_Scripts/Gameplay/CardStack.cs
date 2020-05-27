@@ -3,7 +3,7 @@
     using System;
     using System.Collections.Generic;
 
-    public sealed class CardStack : ICardCollection
+    public sealed class CardStack : ICardCollection, IInteractableCollection
     {
         #region Public Types
         public sealed class OnCardsAddedArgs : EventArgs
@@ -47,16 +47,22 @@
         #endregion Public Variables
 
         #region Public Methods
-        public CardStack(bool isCovered)
+        public CardStack(InteractionController interaction, bool isCovered)
         {
             IsCovered = isCovered;
+            _Interaction = interaction;
         }
 
         public void AddCards(List<Card> cards)
         {
-            if (TopCard != null) { TopCard.Interactable = false; }
+            if (_Stack.Count > 0) { TopCard.Interactable = false; }
 
-            foreach (var card in cards) { _Stack.Push(card); }
+            foreach (var card in cards) 
+            { 
+                _Stack.Push(card);
+                card.OnInteraction += OnInteraction;
+            }
+
             TopCard.Interactable = true;
 
             OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards));
@@ -64,9 +70,11 @@
 
         public void AddCard(Card card)
         {
-            if(TopCard != null) { TopCard.Interactable = false; }
+            if(_Stack.Count > 0) { TopCard.Interactable = false; }
 
             _Stack.Push(card);
+            card.OnInteraction += OnInteraction;
+
             card.Interactable = true;
 
             OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
@@ -76,17 +84,24 @@
         {
             var card = _Stack.Pop();
             card.Interactable = false;
+            card.OnInteraction -= OnInteraction;
 
-            if(TopCard != null) { TopCard.Interactable = true; }
+            if (_Stack.Count > 0) { TopCard.Interactable = true; }
 
             OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card));
 
             return card;
         }
+
+        public void OnInteraction(object sender, Card.OnInteractionArgs args)
+        {
+            _Interaction.OnInteraction(args.Card, this, InteractionController.InteractableType.CardStack);
+        }
         #endregion Public Methods
 
         #region Private Variables
         private Stack<Card> _Stack = new Stack<Card>();
+        private readonly InteractionController _Interaction;
         #endregion Private Variables
     }
 }
