@@ -54,19 +54,31 @@
 
         public void AddCards(List<Card> cards)
         {
+            if (TopCard != null) { TopCard.Interactable = false; }
+
             foreach (var card in cards) { _Stack.Push(card); }
+            TopCard.Interactable = true;
+
             OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards));
         }
 
         public void AddCard(Card card)
         {
+            if(TopCard != null) { TopCard.Interactable = false; }
+
             _Stack.Push(card);
+            card.Interactable = true;
+
             OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
         }
 
         public Card RemoveCard(Card optional = null)
         {
             var card = _Stack.Pop();
+            card.Interactable = false;
+
+            if(TopCard != null) { TopCard.Interactable = true; }
+
             OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card));
 
             return card;

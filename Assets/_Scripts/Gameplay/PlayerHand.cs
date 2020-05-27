@@ -44,26 +44,36 @@
         public event EventHandler<OnCardAddedArgs> OnCardAdded;
         public event EventHandler<OnCardRemovedArgs> OnCardRemoved;
         public int Count => _Hand.Count;
+        public bool IsInspect { get; }
         #endregion Public Variables
 
         #region Public Methods
-
+        public PlayerHand(bool isInspect = false)
+        {
+            IsInspect = isInspect;
+        }
 
         public void AddCards(List<Card> cards)
         {
             _Hand.AddRange(cards);
+            cards.ForEach(x => x.Interactable = true);
+
             OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards));
         }
 
         public void AddCard(Card card)
         {
             _Hand.Add(card);
+            card.Interactable = true;
+
             OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
         }
 
         public Card RemoveCard(Card card)
         {
             _Hand.Remove(card);
+            card.Interactable = false;
+
             OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card, _Hand));
 
             return card;

@@ -117,10 +117,10 @@
 
         private void SpawnInspectHand()
         {
-            _InspectHand = new PlayerHand();
+            _InspectHand = new PlayerHand(true);
 
             var handComponent = Instantiate(_HandPrefab, _InspectHandTransform);
-            handComponent.Initialize(_InspectHand, false);
+            handComponent.Initialize(_InspectHand);
         }
 
         private void OnGameModeChanged(object sender, GameModeController.OnGameModeChangedArgs args)

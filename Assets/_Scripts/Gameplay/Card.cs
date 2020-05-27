@@ -39,6 +39,7 @@
         public int Value { get; }
         public bool InAnimation { get; set; }
         public bool IsCovered { get; private set; }
+        public bool Interactable { get; set; }
 
         public event EventHandler<OnCardAllignedArgs> OnCardAlligned;
         public event EventHandler<OnCardMovedArgs> OnCardMoved;
