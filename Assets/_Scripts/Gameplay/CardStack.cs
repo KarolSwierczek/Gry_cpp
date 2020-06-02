@@ -70,7 +70,7 @@
 
         public void AddCard(Card card)
         {
-            if(_Stack.Count > 0) { TopCard.Interactable = false; }
+            if (_Stack.Count > 0) { TopCard.Interactable = false; }
 
             _Stack.Push(card);
             card.OnInteraction += OnInteraction;

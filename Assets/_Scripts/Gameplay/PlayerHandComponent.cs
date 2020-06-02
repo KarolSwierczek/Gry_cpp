@@ -11,10 +11,8 @@
         public void Initialize(PlayerHand hand)
         {
             _Hand = hand;
-
             _Hand.OnCardsAdded += OnCardsAdded;
-            _Hand.OnCardAdded += OnCardAdded;
-            _Hand.OnCardRemoved += OnCardRemoved;
+            _Hand.OnHandChanged += OnHandChanged;
         }
         #endregion Public Methods
 
@@ -22,8 +20,7 @@
         private void OnDestroy()
         {
             _Hand.OnCardsAdded -= OnCardsAdded;
-            _Hand.OnCardAdded -= OnCardAdded;
-            _Hand.OnCardRemoved -= OnCardRemoved;
+            _Hand.OnHandChanged -= OnHandChanged;
         }
         #endregion Unity Methods
 
@@ -33,61 +30,38 @@
 
         #region Private Variables
         private PlayerHand _Hand;
+        private CoroutineHandle _RefreshCoroutine;
         #endregion Private Variables
 
         #region Private Methods
+        private void OnHandChanged(object sender, PlayerHand.OnHandChangedArgs args)
+        {
+            if(_RefreshCoroutine != null) { Timing.KillCoroutines(_RefreshCoroutine); }
+            _RefreshCoroutine = Timing.RunCoroutine(RefreshHandCoroutine(args.CurrentCards));
+        }
+
         private void OnCardsAdded(object sender, PlayerHand.OnCardsAddedArgs args)
         {
-            RefreshCardPositions(args.OtherCards);
-            Timing.RunCoroutine(AddCardsCoroutine(args.Cards));
+            foreach(var card in args.Cards) { card.AllignCard(transform.forward); }
         }
 
-        private void OnCardAdded(object sender, PlayerHand.OnCardAddedArgs args)
+        private Vector3 GetCardPosition(int cardIndex)
         {
-            RefreshCardPositions(args.OtherCards);
-            args.Card.MoveCard(GetNextCardPosition(), transform.forward, args.Card.IsCovered == _Hand.IsInspect);
-        }
+            if (_Hand.Count <= cardIndex) { throw new System.ArgumentException("Card index out of range!"); }
 
-        private void OnCardRemoved(object sender, PlayerHand.OnCardRemovedArgs args)
-        {
-            RefreshCardPositions(args.OtherCards);
-        }
-
-        private Vector3 GetNextCardPosition(int numOfCardsAdded = 1)
-        {
-            if (_Hand.Count <= 0) { throw new System.Exception("Trying to get next card position, but the stack is empty!"); }
-            if (_Hand.Count < numOfCardsAdded) { throw new System.ArgumentException("Number of cards added is greater than number of cards in stack!"); }
-
-            var deltaX = (_Hand.Count * 0.5f - numOfCardsAdded + 0.5f) * _Settings.Width;
+            var deltaX = (0.5f * (1-_Hand.Count) + cardIndex) * _Settings.Width;
 
             return transform.position + transform.right * deltaX;
         }
 
-        private IEnumerator<float> AddCardsCoroutine(List<Card> cards)
+        private IEnumerator<float> RefreshHandCoroutine(List<Card> cards)
         {
-            var count = cards.Count;
-
-            foreach (var card in cards)
+            for (var i = 0; i < cards.Count; i++)
             {
-                card.AllignCard(transform.forward);
+                var card = cards[i];
+                card.MoveCard(GetCardPosition(i), transform.forward, card.IsCovered == _Hand.IsInspect);
 
-                yield return Timing.WaitForOneFrame;
-
-                card.MoveCard(GetNextCardPosition(count), transform.forward, card.IsCovered == _Hand.IsInspect);
-                count--;
-
-                yield return Timing.WaitForSeconds(_Settings.CardDelay - Time.deltaTime);
-            }
-        }
-
-        private void RefreshCardPositions(List<Card> cards)
-        {
-            var count = cards.Count;
-
-            foreach(var card in cards)
-            {
-                card.MoveCard(GetNextCardPosition(count), transform.forward, card.IsCovered == _Hand.IsInspect);
-                count--;
+                yield return Timing.WaitForSeconds(_Settings.CardDelay);
             }
         }
         #endregion Private Methods

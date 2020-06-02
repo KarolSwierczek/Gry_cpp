@@ -2,6 +2,8 @@
 {
     using UnityEngine;
     using Zenject;
+    using MEC;
+    using Sirenix.OdinInspector;
 
     public sealed class CardComponent : MonoBehaviour, IInteractable
     {
@@ -15,9 +17,10 @@
             _Card.OnCardFlipped += OnCardFlipped;
         }
 
-        public void OnAnimationStarted()
+        public void OnAnimationStarted(CoroutineHandle handle)
         {
             _Card.InAnimation = true;
+            AnimationHandle = handle;
         }
 
         public void OnAnimationEnded()
@@ -25,6 +28,12 @@
             _Card.InAnimation = false;
         }
         #endregion Public Methods
+
+        #region Public Variables
+        public CoroutineHandle AnimationHandle { get; private set; }
+        [ShowInInspector, ReadOnly]
+        public bool IsCovered => _Card.IsCovered; //todo: ugly
+        #endregion Public Variables
 
         #region Unity Methods
         private void OnDestroy()
@@ -37,6 +46,7 @@
 
         #region Private Variables
         private Card _Card;
+
         [Inject] private CardAnimationController _Animator;
         #endregion Private Variables
 

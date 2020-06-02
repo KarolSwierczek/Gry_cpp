@@ -16,17 +16,23 @@
 
         public void MoveCard(CardComponent card, Vector3 targetPosition, Vector3 forwardDirection)
         {
-            Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, forwardDirection, _Settings.MovementSpeed));
+            AnimateCard(card,
+            Timing.RunCoroutine(MoveCardCoroutine(card, targetPosition, forwardDirection, _Settings.MovementSpeed))
+            );
         }
 
         public void FlipCard(CardComponent card)
         {
-            Timing.RunCoroutine(FlipCardCoroutine(card, _Settings.FlipDuration));
+            AnimateCard(card,
+            Timing.RunCoroutine(FlipCardCoroutine(card, _Settings.FlipDuration))
+            );
         }
 
         public void MoveAndFlipCard(CardComponent card, Vector3 targetPosition, Vector3 forwardDirection)
         {
-            Timing.RunCoroutine(MoveAndFlipCardCoroutine(card, targetPosition, forwardDirection, _Settings.MovementSpeed, _Settings.FlipDuration));
+            AnimateCard(card,
+            Timing.RunCoroutine(MoveAndFlipCardCoroutine(card, targetPosition, forwardDirection, _Settings.MovementSpeed, _Settings.FlipDuration))
+            );
         }
         #endregion Public Methods
 
@@ -35,6 +41,12 @@
         #endregion Private Variables
 
         #region Private Methods
+        private void AnimateCard(CardComponent card, CoroutineHandle handle)
+        {
+            if(card.AnimationHandle != null) { Timing.KillCoroutines(card.AnimationHandle); }
+            card.OnAnimationStarted(handle);
+        }
+
         private IEnumerator<float> MoveCardCoroutine(CardComponent card, Vector3 targetPostion, Vector3 forwardDirection, float speed)
         {
             var time = 0f;
@@ -42,9 +54,9 @@
             var startPosition = card.transform.position;
 
             var duration = (targetPostion - startPosition).magnitude / speed;
-            var targetRotation = Quaternion.LookRotation(forwardDirection, card.transform.up);
+            if(duration < float.Epsilon) { yield break; }
 
-            card.OnAnimationStarted();
+            var targetRotation = Quaternion.LookRotation(forwardDirection, card.transform.up);       
 
             while (time <= duration)
             {
@@ -67,9 +79,7 @@
         {
             var time = 0f;
             var startRotation = card.transform.rotation;
-            var targetRotation = Quaternion.LookRotation(card.transform.forward, -card.transform.up);
-
-            card.OnAnimationStarted();
+            var targetRotation = Quaternion.LookRotation(card.transform.forward, card.IsCovered ? Vector3.up : Vector3.down);
 
             while (time <= duration)
             {

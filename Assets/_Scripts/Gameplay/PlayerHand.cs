@@ -9,36 +9,40 @@
         public sealed class OnCardsAddedArgs : EventArgs
         {
             public List<Card> Cards { get; }
-            public List<Card> OtherCards { get; }
 
-            public OnCardsAddedArgs(List<Card> cards, List<Card> otherCards)
+            public OnCardsAddedArgs(List<Card> cards)
             {
                 Cards = cards;
-                OtherCards = otherCards;
             }
         }
 
         public sealed class OnCardAddedArgs : EventArgs
         {
             public Card Card { get; }
-            public List<Card> OtherCards { get; }
 
-            public OnCardAddedArgs(Card card, List<Card> otherCards)
+            public OnCardAddedArgs(Card card)
             {
                 Card = card;
-                OtherCards = otherCards;
             }
         }
 
         public sealed class OnCardRemovedArgs : EventArgs
         {
             public Card Card { get; }
-            public List<Card> OtherCards { get; }
 
-            public OnCardRemovedArgs(Card card, List<Card> otherCards)
+            public OnCardRemovedArgs(Card card)
             {
                 Card = card;
-                OtherCards = otherCards;
+            }
+        }
+
+        public sealed class OnHandChangedArgs : EventArgs
+        {
+            public List<Card> CurrentCards { get; }
+
+            public OnHandChangedArgs(List<Card> currentCards)
+            {
+                CurrentCards = currentCards;
             }
         }
         #endregion Public Types
@@ -47,6 +51,8 @@
         public event EventHandler<OnCardsAddedArgs> OnCardsAdded;
         public event EventHandler<OnCardAddedArgs> OnCardAdded;
         public event EventHandler<OnCardRemovedArgs> OnCardRemoved;
+        public event EventHandler<OnHandChangedArgs> OnHandChanged;
+
         public int Count => _Hand.Count;
         public bool IsInspect { get; }
         #endregion Public Variables
@@ -60,25 +66,27 @@
 
         public void AddCards(List<Card> cards)
         {
-            var other = _Hand;
             _Hand.AddRange(cards);
+
             foreach(var card in cards)
             {
                 if (!IsInspect) { card.Interactable = true; }
                 card.OnInteraction += OnInteraction;
             }
 
-            OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards, _Hand));
+            OnCardsAdded?.Invoke(this, new OnCardsAddedArgs(cards));
+            OnHandChanged?.Invoke(this, new OnHandChangedArgs(_Hand));
         }
 
         public void AddCard(Card card)
         {
-            var other = _Hand;
             _Hand.Add(card);
+
             if (!IsInspect) { card.Interactable = true; }
             card.OnInteraction += OnInteraction;
 
-            OnCardAdded?.Invoke(this, new OnCardAddedArgs(card, _Hand));
+            OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
+            OnHandChanged?.Invoke(this, new OnHandChangedArgs(_Hand));
         }
 
         public Card RemoveCard(Card card)
@@ -87,7 +95,8 @@
             card.Interactable = false;
             card.OnInteraction -= OnInteraction;
 
-            OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card, _Hand));
+            OnCardRemoved?.Invoke(this, new OnCardRemovedArgs(card));
+            OnHandChanged?.Invoke(this, new OnHandChangedArgs(_Hand));
 
             return card;
         }
