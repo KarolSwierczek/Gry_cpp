@@ -68,9 +68,9 @@
         #region Private Methods
         private IEnumerator<float> SetupCoroutine()
         {
-            for(var i = 0; i < _GameModeController.NumOfPlayers; i++)
+            for (var i = 0; i < _GameModeController.NumOfPlayers; i++)
             {
-                SpawnPlayerHand(i);
+                SpawnPlayerHand(i, i==0);
                 yield return Timing.WaitForSeconds(_Settings.HandDelay);
             }
 
@@ -81,15 +81,16 @@
             yield return Timing.WaitForSeconds(_Settings.StackDelay);
 
             SpawnInspectHand();
-            _Interaction.Initialize(_InspectHand, _UncoveredStack);
+            _Interaction.Initialize(_InspectHand, _CoveredStack, _UncoveredStack);
 
             _GameModeController.Mode = GameModeController.GameMode.Game;
         }
 
-        private void SpawnPlayerHand(int handIndex)
+        private void SpawnPlayerHand(int handIndex, bool isPlayer = false)
         {
             var cards = _Spawner.SpawnCards(_Settings.CardsPerPlayer, _CardsParent);
-            _PlayerHands[handIndex] = new PlayerHand(_Interaction);
+            var cardCollectionType = isPlayer ? InteractionController.CardCollectionType.Player : InteractionController.CardCollectionType.NPC;
+            _PlayerHands[handIndex] = new PlayerHand(_Interaction, cardCollectionType);
 
             var handComponent = Instantiate(_HandPrefab, _PlayerHandTransforms[handIndex]);
             handComponent.Initialize(_PlayerHands[handIndex]);
@@ -101,7 +102,7 @@
         {
             var count = _Settings.CardsTotal - _GameModeController.NumOfPlayers * _Settings.CardsPerPlayer;
             var cards = _Spawner.SpawnCards(count, _CardsParent);
-            _CoveredStack = new CardStack(_Interaction, true);
+            _CoveredStack = new CardStack(_Interaction, InteractionController.CardCollectionType.Draw);
 
             var stackComponent = Instantiate(_StackPrefab, _CoveredStackTransform);
             stackComponent.Initialize(_CoveredStack);
@@ -111,7 +112,7 @@
 
         private void SpawnUncoveredStack()
         {
-            _UncoveredStack = new CardStack(_Interaction, false);
+            _UncoveredStack = new CardStack(_Interaction, InteractionController.CardCollectionType.Discard);
 
             var stackComponent = Instantiate(_StackPrefab, _UncoveredStackTransform);
             stackComponent.Initialize(_UncoveredStack);
@@ -121,7 +122,7 @@
 
         private void SpawnInspectHand()
         {
-            _InspectHand = new PlayerHand(_Interaction, true);
+            _InspectHand = new PlayerHand(_Interaction, InteractionController.CardCollectionType.Inspect);
 
             var handComponent = Instantiate(_HandPrefab, _InspectHandTransform);
             handComponent.Initialize(_InspectHand);

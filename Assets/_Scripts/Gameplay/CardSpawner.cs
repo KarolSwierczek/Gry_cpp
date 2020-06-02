@@ -13,7 +13,7 @@
             if(_AvailableCardList == null)
             {
                 _AvailableCardList = new List<int>();
-                _AvailableCardList.AddRange(_Settings.CardValueList);
+                _AvailableCardList.AddRange(_Settings.CardIdList);
             }
 
             if(count > _AvailableCardList.Count) { throw new System.ArgumentException("Trying to spawn " + count + " cards but there's only " + _AvailableCardList.Count + " cards available!"); }
@@ -23,7 +23,9 @@
             for(var i = 0; i < count; i++)
             {
                 var randomIndex = Random.Range(0, _AvailableCardList.Count);
-                result.Add(SpawnCard(_AvailableCardList[randomIndex], parent));
+                var cardId = _AvailableCardList[randomIndex];
+                
+                result.Add(SpawnCard(_Settings.GetCardPreset(cardId), parent));
                 _AvailableCardList.RemoveAt(randomIndex);
             }
 
@@ -37,10 +39,10 @@
         #endregion Private Variables
 
         #region Private Methods
-        private Card SpawnCard(int value, Transform parent)
+        private Card SpawnCard(CardSettings.CardPreset preset, Transform parent)
         {
-            var card = new Card(value);
-            var cardComponent = Object.Instantiate(_Settings.GetCardPrefab(value), parent).GetComponent<CardComponent>();
+            var card = new Card(preset.Value, preset.Type);
+            var cardComponent = Object.Instantiate(preset.Prefab, parent).GetComponent<CardComponent>();
             cardComponent.Initialize(card);
 
             return card;

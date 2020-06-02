@@ -7,5 +7,7 @@
         void AddCards(List<Card> cards);
         void AddCard(Card card);
         Card RemoveCard(Card card);
+
+        InteractionController.CardCollectionType Type {get;}
     }
 }

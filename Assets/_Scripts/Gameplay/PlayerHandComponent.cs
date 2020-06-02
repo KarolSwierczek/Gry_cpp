@@ -59,7 +59,7 @@
             for (var i = 0; i < cards.Count; i++)
             {
                 var card = cards[i];
-                card.MoveCard(GetCardPosition(i), transform.forward, card.IsCovered == _Hand.IsInspect);
+                card.MoveCard(GetCardPosition(i), transform.forward, card.IsCovered != _Hand.IsCovered);
 
                 yield return Timing.WaitForSeconds(_Settings.CardDelay);
             }

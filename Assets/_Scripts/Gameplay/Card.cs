@@ -6,6 +6,14 @@
     public sealed class Card
     {
         #region Public Types
+        public enum CardType
+        {
+            Normal,
+            Peek,
+            Draw,
+            Swap,
+        }
+
         public sealed class OnCardAllignedArgs : EventArgs
         {
             public Vector3 ForwardDirection { get; }
@@ -47,6 +55,7 @@
 
         #region Public Variables
         public int Value { get; }
+        public CardType Type { get; }
         public bool InAnimation { get; set; }
         public bool IsCovered { get; private set; }
         public bool Interactable { get; set; }
@@ -58,9 +67,10 @@
         #endregion Public Variables
 
         #region Public Methods
-        public Card(int value)
+        public Card(int value, CardType type)
         {
             Value = value;
+            Type = type;
             IsCovered = true;
         }
 

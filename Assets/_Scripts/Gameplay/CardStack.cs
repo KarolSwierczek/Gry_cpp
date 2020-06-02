@@ -43,13 +43,14 @@
         public event EventHandler<OnCardRemovedArgs> OnCardRemoved;
         public Card TopCard => _Stack.Peek();
         public int Count => _Stack.Count;
-        public bool IsCovered { get; }
+        public bool IsCovered => Type == InteractionController.CardCollectionType.Draw;
+        public InteractionController.CardCollectionType Type { get; }
         #endregion Public Variables
 
         #region Public Methods
-        public CardStack(InteractionController interaction, bool isCovered)
+        public CardStack(InteractionController interaction, InteractionController.CardCollectionType type)
         {
-            IsCovered = isCovered;
+            Type = type;
             _Interaction = interaction;
         }
 
@@ -95,7 +96,7 @@
 
         public void OnInteraction(object sender, Card.OnInteractionArgs args)
         {
-            _Interaction.OnInteraction(args.Card, this, InteractionController.InteractableType.CardStack);
+            _Interaction.OnInteraction(args.Card, this);
         }
         #endregion Public Methods
 

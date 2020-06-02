@@ -54,23 +54,24 @@
         public event EventHandler<OnHandChangedArgs> OnHandChanged;
 
         public int Count => _Hand.Count;
-        public bool IsInspect { get; }
+        public InteractionController.CardCollectionType Type { get; }
+        public bool IsCovered => Type != InteractionController.CardCollectionType.Inspect;
         #endregion Public Variables
 
         #region Public Methods
-        public PlayerHand(InteractionController interaction, bool isInspect = false)
+        public PlayerHand(InteractionController interaction, InteractionController.CardCollectionType type)
         {
-            IsInspect = isInspect;
             _Interaction = interaction;
+            Type = type;
         }
 
         public void AddCards(List<Card> cards)
         {
             _Hand.AddRange(cards);
-
+        
             foreach(var card in cards)
             {
-                if (!IsInspect) { card.Interactable = true; }
+                card.Interactable = true;
                 card.OnInteraction += OnInteraction;
             }
 
@@ -82,7 +83,7 @@
         {
             _Hand.Add(card);
 
-            if (!IsInspect) { card.Interactable = true; }
+            card.Interactable = true;
             card.OnInteraction += OnInteraction;
 
             OnCardAdded?.Invoke(this, new OnCardAddedArgs(card));
@@ -109,7 +110,7 @@
 
         public void OnInteraction(object sender, Card.OnInteractionArgs args)
         {
-            _Interaction.OnInteraction(args.Card, this, InteractionController.InteractableType.PlayerHand);
+            _Interaction.OnInteraction(args.Card, this);
         }
         #endregion Public Methods
 
