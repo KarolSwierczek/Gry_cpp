@@ -14,42 +14,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _Cards:
   - Value: 0
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Count: 4
+    Prefab: {fileID: 2696215163446382455, guid: c68a51b3ea99abc43af1ba6b73750edb,
       type: 3}
   - Value: 1
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Count: 4
+    Prefab: {fileID: 4876115283931679324, guid: 0f9765b111e77584595db053967f16cc,
       type: 3}
   - Value: 2
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Count: 4
+    Prefab: {fileID: 1800612539788432325, guid: f36648f19bdde3d4a96c9b4c40119923,
       type: 3}
   - Value: 3
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Count: 4
+    Prefab: {fileID: 7413524164529513511, guid: e3b75fe6983508d42bdb56429398fcfd,
       type: 3}
   - Value: 4
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Count: 4
+    Prefab: {fileID: 5504869609906794301, guid: a646ce69c69feba4ca6edac4c0669ea0,
       type: 3}
   - Value: 5
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Count: 4
+    Prefab: {fileID: 8742362824479177310, guid: 7f4d75e6a6547964390e43b9316e6095,
       type: 3}
   - Value: 6
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Count: 4
+    Prefab: {fileID: 3971463963499164165, guid: 8fdb1f3a5a53b4b4e8c87e76aefb012f,
       type: 3}
   - Value: 7
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Count: 4
+    Prefab: {fileID: 1374249010573034591, guid: 1fc0c77a3322d9949a571f609a1a688d,
       type: 3}
   - Value: 8
-    Count: 5
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
-      type: 3}
+    Count: 4
+    Prefab: {fileID: 660810538892900870, guid: 7fb3ddac9e0ccd04cb318d5a32219de0, type: 3}
   - Value: 9
     Count: 9
-    Prefab: {fileID: 6108117765742829520, guid: ef41c20f686e5b942bc9d8845bae1273,
+    Prefab: {fileID: 5825838755961721947, guid: 4dfcd536c006f0d40af775e5d40b4446,
+      type: 3}
+  - Value: 5
+    Count: 3
+    Prefab: {fileID: 4252917332878823832, guid: d7442d21d34c0c44d82c6ba4a228efdd,
+      type: 3}
+  - Value: 6
+    Count: 3
+    Prefab: {fileID: 7827354182253959382, guid: 3f18b86d8de9c474fb79fa3bc098c3d9,
+      type: 3}
+  - Value: 7
+    Count: 3
+    Prefab: {fileID: 7610224362752639765, guid: 2e17bdd22d438a54787efbd675e059e8,
       type: 3}
