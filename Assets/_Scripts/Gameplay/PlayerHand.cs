@@ -103,9 +103,16 @@
         }
         public Card RemoveFirstCard()
         {
-            var card = _Hand[0];
+            if (_Hand.Count <= 0) { throw new Exception("Trying to remove a card that does not exist"); }
 
-            return RemoveCard(card);
+            return RemoveCard(_Hand[0]);
+        }
+
+        public Card GetFirstCard()
+        {
+            if(_Hand.Count <= 0) { throw new Exception("Trying to get a card that does not exist"); }
+
+            return _Hand[0];
         }
 
         public void OnInteraction(object sender, Card.OnInteractionArgs args)

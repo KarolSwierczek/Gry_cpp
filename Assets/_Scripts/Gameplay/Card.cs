@@ -3,7 +3,7 @@
     using System;
     using UnityEngine;
 
-    public sealed class Card
+    public sealed class Card : IComparable<Card>
     {
         #region Public Types
         public enum CardType
@@ -95,6 +95,11 @@
         {
             if (!Interactable) { return; }
             OnInteraction?.Invoke(this, new OnInteractionArgs(this));
+        }
+
+        public int CompareTo(Card other)
+        {
+            return Value.CompareTo(other.Value);
         }
         #endregion Public Methods
     }

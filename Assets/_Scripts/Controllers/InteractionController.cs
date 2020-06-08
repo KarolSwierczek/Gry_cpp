@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-
-namespace cpp.Sen.Gameplay
+﻿namespace cpp.Sen.Gameplay
 {
+    using System.Collections.Generic;
+    using Zenject;
+
     public sealed class InteractionController
     {
         #region Public Types
@@ -11,51 +12,48 @@ namespace cpp.Sen.Gameplay
             Discard,
             Inspect,
             Player,
-            NPC,
+            CPU,
         }
         #endregion Public Types
 
         #region Public Methods
-        public void Initialize(PlayerHand inspectHand, CardStack coveredStack, CardStack uncoveredStack)
+        public void Initialize() //todo: messy
         {
-            _Inspect = inspectHand;
-            _Draw = coveredStack;
-            _Discard = uncoveredStack;
-
             PopulateRuleBook();
+            _IsInitialized = true;
         }
 
         public void OnInteraction(Card card, ICardCollection source)
         {
+            if (!_IsInitialized) { return; }
             if (!_CurrentInteractionRule.CanInteract(source.Type)) { return; }
 
-            _CurrentInteractionRule.Interact(card, source, _Inspect, _Draw, _Discard);
+            _CurrentInteractionRule.Interact(card, source);
             _CurrentInteractionRule = _RuleBook[_CurrentInteractionRule.NextRule];
         }
         #endregion Public Methods
 
         #region Private Variables
+        [Inject] private readonly CardCollections _CardCollections;
+
+        private bool _IsInitialized;
         private IInteractionRule _CurrentInteractionRule;
-
-        private PlayerHand _Inspect;
-        private CardStack _Discard;
-        private CardStack _Draw;
-
         private Dictionary<InteractionRules.InteractionRuleType, IInteractionRule> _RuleBook = new Dictionary<InteractionRules.InteractionRuleType, IInteractionRule>();
         #endregion Private Variables
 
         #region Private Methods
         private void PopulateRuleBook()
         {
-            _RuleBook.Add(InteractionRules.InteractionRuleType.Default, new InteractionRules.DefaultRule());
-            _RuleBook.Add(InteractionRules.InteractionRuleType.FromDiscard, new InteractionRules.FromDiscardRule());
-            _RuleBook.Add(InteractionRules.InteractionRuleType.FromDraw, new InteractionRules.FromDrawRule());
-            _RuleBook.Add(InteractionRules.InteractionRuleType.FromDrawSpecial, new InteractionRules.FromDrawSpecialRule());
-            _RuleBook.Add(InteractionRules.InteractionRuleType.FromPeek1, new InteractionRules.FromPeek1Rule());
+            _RuleBook.Add(InteractionRules.InteractionRuleType.Peek2, new InteractionRules.Peek2Rule(_CardCollections));
+            _RuleBook.Add(InteractionRules.InteractionRuleType.Default, new InteractionRules.DefaultRule(_CardCollections));
+            _RuleBook.Add(InteractionRules.InteractionRuleType.FromDiscard, new InteractionRules.FromDiscardRule(_CardCollections));
+            _RuleBook.Add(InteractionRules.InteractionRuleType.FromDraw, new InteractionRules.FromDrawRule(_CardCollections));
+            _RuleBook.Add(InteractionRules.InteractionRuleType.FromDrawSpecial, new InteractionRules.FromDrawSpecialRule(_CardCollections));
+            _RuleBook.Add(InteractionRules.InteractionRuleType.FromPeek1, new InteractionRules.FromPeek1Rule(_CardCollections));
             _RuleBook.Add(InteractionRules.InteractionRuleType.FromSwap2, new InteractionRules.FromSwap2Rule());
-            _RuleBook.Add(InteractionRules.InteractionRuleType.FromDraw2, new InteractionRules.FromDraw2Rule());
+            _RuleBook.Add(InteractionRules.InteractionRuleType.FromDraw2, new InteractionRules.FromDraw2Rule(_CardCollections));
 
-            _CurrentInteractionRule = _RuleBook[InteractionRules.InteractionRuleType.Default];
+            _CurrentInteractionRule = _RuleBook[InteractionRules.InteractionRuleType.Peek2];
         }
         #endregion Private Methods
     }

@@ -7,6 +7,7 @@
         #region Public Types
         public enum InteractionRuleType
         {
+            Peek2,
             Default,
             FromDiscard,
             FromDraw,
@@ -18,10 +19,72 @@
 
         /// <summary>
         /// Interaction Rule that's active when
+        /// the pklayer peeks cards at the beginning of the round
+        /// </summary>
+        public class Peek2Rule : IInteractionRule
+        {
+            #region Public Methods
+            public Peek2Rule(CardCollections cardCollections)
+            {
+                _CardCollections = cardCollections;
+            }
+            #endregion Public Methods
+
+            #region Private Variables
+            private readonly Dictionary<InteractionController.CardCollectionType, bool> InteractionTable =
+                new Dictionary<InteractionController.CardCollectionType, bool> {
+                    { InteractionController.CardCollectionType.Draw, false },
+                    { InteractionController.CardCollectionType.Discard, false },
+                    { InteractionController.CardCollectionType.Inspect, false },
+                    { InteractionController.CardCollectionType.Player, true },
+                    { InteractionController.CardCollectionType.CPU, false }
+                };
+
+            private readonly  CardCollections _CardCollections;
+
+            private InteractionRuleType _NextRule = InteractionRuleType.Peek2;
+            InteractionRuleType IInteractionRule.NextRule => _NextRule;
+            #endregion Private Variables
+
+            #region Private Methods         
+            bool IInteractionRule.CanInteract(InteractionController.CardCollectionType type)
+            {
+                if (!InteractionTable.ContainsKey(type)) { throw new System.ArgumentException("type " + type + " does not exist in the interaction table!"); }
+                return InteractionTable[type];
+            }
+
+            void IInteractionRule.Interact(Card card, ICardCollection source)
+            {
+                _NextRule = InteractionRuleType.Peek2;
+
+                if (_CardCollections.Inspect.Count < 2)
+                {
+                    source.RemoveCard(card);
+                    _CardCollections.Inspect.AddCard(card);
+                }
+                else
+                {
+                    source.AddCard(_CardCollections.Inspect.RemoveFirstCard());
+                    source.AddCard(_CardCollections.Inspect.RemoveFirstCard());
+                    _NextRule = InteractionRuleType.Default;
+                }
+            }
+            #endregion Private Methods
+        }
+
+        /// <summary>
+        /// Interaction Rule that's active when
         /// it's the beginning of players turn
         /// </summary>
         public class DefaultRule : IInteractionRule
         {
+            #region Public Methods
+            public DefaultRule(CardCollections cardCollections)
+            {
+                _CardCollections = cardCollections;
+            }
+            #endregion Public Methods
+
             #region Private Variables
             private readonly Dictionary<InteractionController.CardCollectionType, bool> InteractionTable =
                 new Dictionary<InteractionController.CardCollectionType, bool> {
@@ -29,8 +92,10 @@
                     { InteractionController.CardCollectionType.Discard, true },
                     { InteractionController.CardCollectionType.Inspect, false },
                     { InteractionController.CardCollectionType.Player, false },
-                    { InteractionController.CardCollectionType.NPC, false }
+                    { InteractionController.CardCollectionType.CPU, false }
                 };
+
+            private readonly CardCollections _CardCollections;
 
             private InteractionRuleType _NextRule = InteractionRuleType.FromDraw;
             InteractionRuleType IInteractionRule.NextRule => _NextRule;
@@ -43,7 +108,7 @@
                 return InteractionTable[type];
             }
 
-            void IInteractionRule.Interact(Card card, ICardCollection source, PlayerHand inspect, CardStack draw, CardStack discard)
+            void IInteractionRule.Interact(Card card, ICardCollection source)
             {
                 switch (source.Type)
                 {
@@ -53,7 +118,7 @@
                             if (card.Type != Card.CardType.Normal) { _NextRule = InteractionRuleType.FromDrawSpecial; }
 
                             var topCard = source.RemoveCard(default);
-                            inspect.AddCard(topCard);
+                            _CardCollections.Inspect.AddCard(topCard);
 
                             break;
                         }
@@ -62,7 +127,7 @@
                             _NextRule = InteractionRuleType.FromDiscard;
 
                             var topCard = source.RemoveCard(default);
-                            inspect.AddCard(topCard);
+                            _CardCollections.Inspect.AddCard(topCard);
 
                             break;
                         }
@@ -79,6 +144,13 @@
         /// </summary>
         public class FromDiscardRule : IInteractionRule
         {
+            #region Public Methods
+            public FromDiscardRule(CardCollections cardCollections)
+            {
+                _CardCollections = cardCollections;
+            }
+            #endregion Public Methods
+
             #region Private Variables
             private readonly Dictionary<InteractionController.CardCollectionType, bool> InteractionTable =
                 new Dictionary<InteractionController.CardCollectionType, bool> {
@@ -86,8 +158,10 @@
                     { InteractionController.CardCollectionType.Discard, false },
                     { InteractionController.CardCollectionType.Inspect, false },
                     { InteractionController.CardCollectionType.Player, true },
-                    { InteractionController.CardCollectionType.NPC, false }
+                    { InteractionController.CardCollectionType.CPU, false }
                 };
+
+            private readonly CardCollections _CardCollections;
 
             private InteractionRuleType _NextRule = InteractionRuleType.Default;
             InteractionRuleType IInteractionRule.NextRule => _NextRule;
@@ -100,7 +174,7 @@
                 return InteractionTable[type];
             }
 
-            void IInteractionRule.Interact(Card card, ICardCollection source, PlayerHand inspect, CardStack draw, CardStack discard)
+            void IInteractionRule.Interact(Card card, ICardCollection source)
             {
                 if (source.Type != InteractionController.CardCollectionType.Player)
                 {
@@ -108,9 +182,9 @@
                 }
 
                 var selectedCard = source.RemoveCard(card);
-                discard.AddCard(selectedCard);
+                _CardCollections.Discard.AddCard(selectedCard);
 
-                var inspectedCard = inspect.RemoveFirstCard();
+                var inspectedCard = _CardCollections.Inspect.RemoveFirstCard();
                 source.AddCard(inspectedCard);
             }
             #endregion Private Methods
@@ -122,6 +196,13 @@
         /// </summary>
         public class FromDrawRule : IInteractionRule
         {
+            #region Public Methods
+            public FromDrawRule(CardCollections cardCollections)
+            {
+                _CardCollections = cardCollections;
+            }
+            #endregion Public Methods
+
             #region Private Variables
             private readonly Dictionary<InteractionController.CardCollectionType, bool> InteractionTable =
                 new Dictionary<InteractionController.CardCollectionType, bool> {
@@ -129,8 +210,10 @@
                     { InteractionController.CardCollectionType.Discard, true },
                     { InteractionController.CardCollectionType.Inspect, false },
                     { InteractionController.CardCollectionType.Player, true },
-                    { InteractionController.CardCollectionType.NPC, false }
+                    { InteractionController.CardCollectionType.CPU, false }
                 };
+
+            private readonly CardCollections _CardCollections;
 
             private InteractionRuleType _NextRule = InteractionRuleType.Default;
             InteractionRuleType IInteractionRule.NextRule => _NextRule;
@@ -143,13 +226,13 @@
                 return InteractionTable[type];
             }
 
-            void IInteractionRule.Interact(Card card, ICardCollection source, PlayerHand inspect, CardStack draw, CardStack discard)
+            void IInteractionRule.Interact(Card card, ICardCollection source)
             {
                 switch (source.Type)
                 {
                     case InteractionController.CardCollectionType.Discard:
                         {
-                            var inspectedCard = inspect.RemoveFirstCard();
+                            var inspectedCard = _CardCollections.Inspect.RemoveFirstCard();
                             source.AddCard(inspectedCard);
 
                             break;
@@ -157,9 +240,9 @@
                     case InteractionController.CardCollectionType.Player:
                         {
                             var selectedCard = source.RemoveCard(card);
-                            discard.AddCard(selectedCard);
+                            _CardCollections.Discard.AddCard(selectedCard);
 
-                            var inspectedCard = inspect.RemoveFirstCard();
+                            var inspectedCard = _CardCollections.Inspect.RemoveFirstCard();
                             source.AddCard(inspectedCard);
 
                             break;
@@ -177,6 +260,13 @@
         /// </summary>
         public class FromDrawSpecialRule : IInteractionRule
         {
+            #region Public Methods
+            public FromDrawSpecialRule(CardCollections cardCollections)
+            {
+                _CardCollections = cardCollections;
+            }
+            #endregion Public Methods
+
             #region Private Variables
             private readonly Dictionary<InteractionController.CardCollectionType, bool> InteractionTable =
                 new Dictionary<InteractionController.CardCollectionType, bool> {
@@ -184,8 +274,10 @@
                     { InteractionController.CardCollectionType.Discard, true },
                     { InteractionController.CardCollectionType.Inspect, true },
                     { InteractionController.CardCollectionType.Player, true },
-                    { InteractionController.CardCollectionType.NPC, false }
+                    { InteractionController.CardCollectionType.CPU, false }
                 };
+
+            private readonly CardCollections _CardCollections;
 
             private InteractionRuleType _NextRule = InteractionRuleType.Default;
             InteractionRuleType IInteractionRule.NextRule => _NextRule;
@@ -198,7 +290,7 @@
                 return InteractionTable[type];
             }
 
-            void IInteractionRule.Interact(Card card, ICardCollection source, PlayerHand inspect, CardStack draw, CardStack discard)
+            void IInteractionRule.Interact(Card card, ICardCollection source)
             {
                 _NextRule = InteractionRuleType.Default;
 
@@ -206,17 +298,17 @@
                 {
                     case InteractionController.CardCollectionType.Discard:
                         {                         
-                            var selectedCard = inspect.RemoveCard(card);
-                            discard.AddCard(selectedCard);
+                            var selectedCard = _CardCollections.Inspect.RemoveCard(card);
+                            _CardCollections.Discard.AddCard(selectedCard);
 
                             break;
                         }
                     case InteractionController.CardCollectionType.Player:
                         {
                             var selectedCard = source.RemoveCard(card);
-                            discard.AddCard(selectedCard);
+                            _CardCollections.Discard.AddCard(selectedCard);
 
-                            var inspectedCard = inspect.RemoveFirstCard();
+                            var inspectedCard = _CardCollections.Inspect.RemoveFirstCard();
                             source.AddCard(inspectedCard);
 
                             break;
@@ -228,10 +320,10 @@
                             {
                                 case Card.CardType.Draw:
                                     {
-                                        _NextRule = InteractionRuleType.FromDraw2; 
-                                        
-                                        inspect.AddCard(draw.RemoveCard());
-                                        inspect.AddCard(draw.RemoveCard());
+                                        _NextRule = InteractionRuleType.FromDraw2;
+
+                                        _CardCollections.Inspect.AddCard(_CardCollections.Draw.RemoveCard());
+                                        _CardCollections.Inspect.AddCard(_CardCollections.Draw.RemoveCard());
 
                                         break;
                                     }
@@ -250,8 +342,8 @@
                                     throw new System.Exception("Normal card type is not supported in " + ToString());
                             }
 
-                            var selectedCard = inspect.RemoveCard(card);
-                            discard.AddCard(selectedCard);
+                            var selectedCard = _CardCollections.Inspect.RemoveCard(card);
+                            _CardCollections.Discard.AddCard(selectedCard);
 
                             break;
                         }
@@ -268,6 +360,13 @@
         /// </summary>
         public class FromPeek1Rule : IInteractionRule
         {
+            #region Public Methods
+            public FromPeek1Rule(CardCollections cardCollections)
+            {
+                _CardCollections = cardCollections;
+            }
+            #endregion Public Methods
+
             #region Private Variables
             private readonly Dictionary<InteractionController.CardCollectionType, bool> InteractionTable =
                 new Dictionary<InteractionController.CardCollectionType, bool> {
@@ -275,8 +374,10 @@
                     { InteractionController.CardCollectionType.Discard, false },
                     { InteractionController.CardCollectionType.Inspect, true },
                     { InteractionController.CardCollectionType.Player, true },
-                    { InteractionController.CardCollectionType.NPC, true }
+                    { InteractionController.CardCollectionType.CPU, true }
                 };
+
+            private readonly CardCollections _CardCollections;
 
             private InteractionRuleType _NextRule = InteractionRuleType.FromPeek1;
             InteractionRuleType IInteractionRule.NextRule => _NextRule;
@@ -290,18 +391,18 @@
                 return InteractionTable[type];
             }
 
-            void IInteractionRule.Interact(Card card, ICardCollection source, PlayerHand inspect, CardStack draw, CardStack discard)
+            void IInteractionRule.Interact(Card card, ICardCollection source)
             {
                 _NextRule = InteractionRuleType.Default;
 
                 switch (source.Type)
                 {
                     case InteractionController.CardCollectionType.Player:
-                    case InteractionController.CardCollectionType.NPC:
+                    case InteractionController.CardCollectionType.CPU:
                         {
-                            if (inspect.Count > 0)
+                            if (_CardCollections.Inspect.Count > 0)
                             {
-                                ReturnCard(inspect);
+                                ReturnCard(_CardCollections.Inspect);
                             }
                             else
                             {
@@ -309,7 +410,7 @@
                                 _PeekSource = source;
 
                                 var selectedCard = source.RemoveCard(card);
-                                inspect.AddCard(selectedCard);
+                                _CardCollections.Inspect.AddCard(selectedCard);
                                 
                             }
 
@@ -317,7 +418,7 @@
                         }
                     case InteractionController.CardCollectionType.Inspect:
                         {
-                            if(inspect.Count > 0) { ReturnCard(inspect); }
+                            if(_CardCollections.Inspect.Count > 0) { ReturnCard(_CardCollections.Inspect); }
 
                             break;
                         }
@@ -341,15 +442,24 @@
         /// </summary>
         public class FromDraw2Rule : IInteractionRule
         {
+            #region Public Methods
+            public FromDraw2Rule(CardCollections cardCollections)
+            {
+                _CardCollections = cardCollections;
+            }
+            #endregion Public Methods
+
             #region Private Variables
             private readonly Dictionary<InteractionController.CardCollectionType, bool> InteractionTable =
                 new Dictionary<InteractionController.CardCollectionType, bool> {
                     { InteractionController.CardCollectionType.Draw, false },
                     { InteractionController.CardCollectionType.Discard, false },
                     { InteractionController.CardCollectionType.Inspect, true },
-                    { InteractionController.CardCollectionType.Player, true },
-                    { InteractionController.CardCollectionType.NPC, false }
+                    { InteractionController.CardCollectionType.Player, false },
+                    { InteractionController.CardCollectionType.CPU, false }
                 };
+
+            private readonly CardCollections _CardCollections;
 
             private InteractionRuleType _NextRule = InteractionRuleType.Default;
             InteractionRuleType IInteractionRule.NextRule => _NextRule;
@@ -362,39 +472,18 @@
                 return InteractionTable[type];
             }
 
-            void IInteractionRule.Interact(Card card, ICardCollection source, PlayerHand inspect, CardStack draw, CardStack discard)
+            void IInteractionRule.Interact(Card card, ICardCollection source)
             {
-                switch (source.Type)
-                {
-                    case InteractionController.CardCollectionType.Inspect:
-                        {
-                            if(inspect.Count == 2)
-                            {
-                                _NextRule = InteractionRuleType.FromDraw2;
-
-                                var selectedCard = source.RemoveCard(card);
-                                discard.AddCard(selectedCard);
-                            }
-
-                            break;
-                        }
-                    case InteractionController.CardCollectionType.Player:
-                        {
-                            if (inspect.Count < 2)
-                            {
-                                var selectedCard = source.RemoveCard(card);
-                                discard.AddCard(selectedCard);
-
-                                var inspectedCard = inspect.RemoveFirstCard();
-                                source.AddCard(inspectedCard);
-                            }
-
-                            break;
-                        }
-                    default:
-                        throw new System.ArgumentException(ToString() + " does not support card collection type " + source.Type);
+                if(source.Type != InteractionController.CardCollectionType.Inspect) 
+                { 
+                    throw new System.ArgumentException(ToString() + " does not support card collection type " + source.Type); 
                 }
+             
+                var selectedCard = source.RemoveCard(card);
+                _CardCollections.Discard.AddCard(selectedCard);
 
+                var isNextCardNormal = _CardCollections.Inspect.GetFirstCard().Type == Card.CardType.Normal;
+                _NextRule = isNextCardNormal ? InteractionRuleType.FromDraw : InteractionRuleType.FromDrawSpecial;
             }
             #endregion Private Methods
         }
@@ -412,7 +501,7 @@
                     { InteractionController.CardCollectionType.Discard, false },
                     { InteractionController.CardCollectionType.Inspect, false },
                     { InteractionController.CardCollectionType.Player, true },
-                    { InteractionController.CardCollectionType.NPC, true }
+                    { InteractionController.CardCollectionType.CPU, true }
                 };
 
             private InteractionRuleType _NextRule = InteractionRuleType.Default;
@@ -428,12 +517,12 @@
                 return InteractionTable[type];
             }
 
-            void IInteractionRule.Interact(Card card, ICardCollection source, PlayerHand inspect, CardStack draw, CardStack discard)
+            void IInteractionRule.Interact(Card card, ICardCollection source)
             {
                 switch (source.Type)
                 {
                     case InteractionController.CardCollectionType.Player:
-                    case InteractionController.CardCollectionType.NPC:
+                    case InteractionController.CardCollectionType.CPU:
                         {
                             if (_SelectedCard == null)
                             {

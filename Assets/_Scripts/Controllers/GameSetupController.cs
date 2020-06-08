@@ -8,6 +8,8 @@
 
     public sealed class GameSetupController : MonoBehaviour
     {
+
+
         #region Unity Methods
         private void Awake()
         {
@@ -42,24 +44,22 @@
         [SerializeField] private Transform _P4HandTransform;
 
         [SerializeField] private Transform _InspectHandTransform;
-
-
-
         #endregion Inspector Variables
 
         #region Private Variables
         [Inject] private GameModeController _GameModeController;
         [Inject] private CardSpawner _Spawner;
         [Inject] private InteractionController _Interaction;
+        [Inject] private CardCollections _CardCollections;
 
-        private CardStack _CoveredStack;
-        private CardStack _UncoveredStack;
         private PlayerHand _P1Hand;
         private PlayerHand _P2Hand;
         private PlayerHand _P3Hand;
         private PlayerHand _P4Hand;
-        private PlayerHand _InspectHand;
 
+        private CardStack _Draw;
+        private CardStack _Discard;
+        private PlayerHand _Inspect;
 
         private Transform[] _PlayerHandTransforms;
         private PlayerHand[] _PlayerHands;
@@ -74,14 +74,16 @@
                 yield return Timing.WaitForSeconds(_Settings.HandDelay);
             }
 
-            SpawnCoveredStack();
+            SpawnDrawStack();
             yield return Timing.WaitForSeconds(_Settings.StackDelay);
 
-            SpawnUncoveredStack();
+            SpawnDiscardStack();
             yield return Timing.WaitForSeconds(_Settings.StackDelay);
 
             SpawnInspectHand();
-            _Interaction.Initialize(_InspectHand, _CoveredStack, _UncoveredStack);
+
+            _CardCollections.Initialize(_Draw, _Discard, _Inspect);
+            _Interaction.Initialize();
 
             _GameModeController.Mode = GameModeController.GameMode.Game;
         }
@@ -89,7 +91,7 @@
         private void SpawnPlayerHand(int handIndex, bool isPlayer = false)
         {
             var cards = _Spawner.SpawnCards(_Settings.CardsPerPlayer, _CardsParent);
-            var cardCollectionType = isPlayer ? InteractionController.CardCollectionType.Player : InteractionController.CardCollectionType.NPC;
+            var cardCollectionType = isPlayer ? InteractionController.CardCollectionType.Player : InteractionController.CardCollectionType.CPU;
             _PlayerHands[handIndex] = new PlayerHand(_Interaction, cardCollectionType);
 
             var handComponent = Instantiate(_HandPrefab, _PlayerHandTransforms[handIndex]);
@@ -98,34 +100,34 @@
             _PlayerHands[handIndex].AddCards(cards);
         }
 
-        private void SpawnCoveredStack()
+        private void SpawnDrawStack()
         {
             var count = _Settings.CardsTotal - _GameModeController.NumOfPlayers * _Settings.CardsPerPlayer;
             var cards = _Spawner.SpawnCards(count, _CardsParent);
-            _CoveredStack = new CardStack(_Interaction, InteractionController.CardCollectionType.Draw);
+            _Draw = new CardStack(_Interaction, InteractionController.CardCollectionType.Draw);
 
             var stackComponent = Instantiate(_StackPrefab, _CoveredStackTransform);
-            stackComponent.Initialize(_CoveredStack);
+            stackComponent.Initialize(_Draw);
 
-            _CoveredStack.AddCards(cards);
+            _Draw.AddCards(cards);
         }
 
-        private void SpawnUncoveredStack()
+        private void SpawnDiscardStack()
         {
-            _UncoveredStack = new CardStack(_Interaction, InteractionController.CardCollectionType.Discard);
+            _Discard = new CardStack(_Interaction, InteractionController.CardCollectionType.Discard);
 
             var stackComponent = Instantiate(_StackPrefab, _UncoveredStackTransform);
-            stackComponent.Initialize(_UncoveredStack);
+            stackComponent.Initialize(_Discard);
 
-            _UncoveredStack.AddCard(_CoveredStack.RemoveCard());
+            _Discard.AddCard(_Draw.RemoveCard());
         }
 
         private void SpawnInspectHand()
         {
-            _InspectHand = new PlayerHand(_Interaction, InteractionController.CardCollectionType.Inspect);
+            _Inspect = new PlayerHand(_Interaction, InteractionController.CardCollectionType.Inspect);
 
             var handComponent = Instantiate(_HandPrefab, _InspectHandTransform);
-            handComponent.Initialize(_InspectHand);
+            handComponent.Initialize(_Inspect);
         }
 
         private void OnGameModeChanged(object sender, GameModeController.OnGameModeChangedArgs args)
