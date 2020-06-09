@@ -68,6 +68,8 @@
         #region Private Methods
         private IEnumerator<float> SetupCoroutine()
         {
+            _PlayerHands = new PlayerHand[_GameModeController.NumOfPlayers];
+
             for (var i = 0; i < _GameModeController.NumOfPlayers; i++)
             {
                 SpawnPlayerHand(i, i==0);
@@ -82,7 +84,7 @@
 
             SpawnInspectHand();
 
-            _CardCollections.Initialize(_Draw, _Discard, _Inspect);
+            _CardCollections.Initialize(_Draw, _Discard, _Inspect, _PlayerHands);
             _Interaction.Initialize();
 
             _GameModeController.Mode = GameModeController.GameMode.Game;

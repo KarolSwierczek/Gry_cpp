@@ -1,15 +1,18 @@
 ﻿namespace cpp.Sen.Gameplay
 {
     using System.Collections.Generic;
-    using Zenject;
     using System.Linq;
 
     public sealed class CPUPlayer
     {
         #region Public Methods
-        public CPUPlayer (PlayerHand hand, List<Card> startingCards, int numOfKnownCards = 2)
+        public CPUPlayer (ICPUPlayerHand hand, CardCollections cardCollections, int numOfKnownCards = 2)
         {
             _Hand = hand;
+            _CardCollections = cardCollections;
+
+            var startingCards = hand.GetCards();
+
             for(var i = 0; i < startingCards.Count; i++)
             {
                 if(i < numOfKnownCards)
@@ -26,6 +29,7 @@
         public void PlayTurn()
         {
             if (!_CardCollections.IsInitialized) { throw new System.Exception("CPU player is trying to play its turn but card collections are not initialized!"); }
+            if (_FirstTurn) { _FirstTurn = false; return; }
 
             var maxKnown = _KnownCards.Max();
 
@@ -38,11 +42,12 @@
         #endregion Public Methods
 
         #region Private Variables
-        [Inject] private CardCollections _CardCollections;
+        private bool _FirstTurn = true;
 
+        private readonly CardCollections _CardCollections;
         private readonly List<Card> _KnownCards = new List<Card>();
         private readonly List<Card> _UnknownCards = new List<Card>();
-        private readonly PlayerHand _Hand;
+        private readonly ICPUPlayerHand _Hand;
         #endregion Private Variables
 
         #region Private Methods

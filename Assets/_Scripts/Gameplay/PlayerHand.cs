@@ -2,8 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 
-    public sealed class PlayerHand : ICardCollection, IInteractableCollection
+    public sealed class PlayerHand : ICardCollection, IInteractableCollection, ICPUPlayerHand
     {
         #region Public Types
         public sealed class OnCardsAddedArgs : EventArgs
@@ -54,6 +55,7 @@
         public event EventHandler<OnHandChangedArgs> OnHandChanged;
 
         public int Count => _Hand.Count;
+        public int Sum => _Hand.Select(x => x.Value).Sum();
         public InteractionController.CardCollectionType Type { get; }
         public bool IsCovered => Type != InteractionController.CardCollectionType.Inspect;
         #endregion Public Variables
@@ -118,6 +120,21 @@
         public void OnInteraction(object sender, Card.OnInteractionArgs args)
         {
             _Interaction.OnInteraction(args.Card, this);
+        }
+
+        List<Card> ICPUPlayerHand.GetCards()
+        {
+            return _Hand;
+        }
+
+        void ICPUPlayerHand.AddCard(Card card)
+        {
+            AddCard(card);
+        }
+
+        void ICPUPlayerHand.RemoveCard(Card card)
+        {
+            RemoveCard(card);
         }
         #endregion Public Methods
 

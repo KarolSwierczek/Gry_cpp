@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using Zenject;
+    using System;
 
     public sealed class InteractionController
     {
@@ -14,6 +15,10 @@
             Player,
             CPU,
         }
+
+        public sealed class OnPlayerEndTurnArgs : EventArgs
+        {
+        }
         #endregion Public Types
 
         #region Public Methods
@@ -25,13 +30,24 @@
 
         public void OnInteraction(Card card, ICardCollection source)
         {
-            if (!_IsInitialized) { return; }
+            if (!_IsInitialized || Locked) { return; }
             if (!_CurrentInteractionRule.CanInteract(source.Type)) { return; }
 
             _CurrentInteractionRule.Interact(card, source);
-            _CurrentInteractionRule = _RuleBook[_CurrentInteractionRule.NextRule];
+
+            if(_CurrentInteractionRule.NextRule == InteractionRules.InteractionRuleType.Default)
+            {
+                OnPlayerEndTurn?.Invoke(this, new OnPlayerEndTurnArgs());
+            }
+
+            _CurrentInteractionRule = _RuleBook[_CurrentInteractionRule.NextRule];            
         }
         #endregion Public Methods
+
+        #region Public Variables
+        public event EventHandler<OnPlayerEndTurnArgs> OnPlayerEndTurn;
+        public bool Locked { get; set; }
+        #endregion Public Variables
 
         #region Private Variables
         [Inject] private readonly CardCollections _CardCollections;
