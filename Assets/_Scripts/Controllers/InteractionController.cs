@@ -24,6 +24,8 @@
         #region Public Methods
         public void Initialize() //todo: messy
         {
+            if (_IsInitialized) { return; }
+
             PopulateRuleBook();
             _IsInitialized = true;
         }

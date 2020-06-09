@@ -37,6 +37,15 @@
 
             OnInitialized?.Invoke(this, new OnInitializedArgs(PlayerHands));
         }
+
+        public void Reset() //todo: refactor
+        {
+            Draw = null;
+            Discard = null;
+            Inspect = null;
+            PlayerHands = null;
+            IsInitialized = false;
+        }
         #endregion Public Methods
     }
 }

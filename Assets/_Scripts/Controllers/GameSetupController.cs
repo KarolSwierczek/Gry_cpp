@@ -69,6 +69,7 @@
         private IEnumerator<float> SetupCoroutine()
         {
             _PlayerHands = new PlayerHand[_GameModeController.NumOfPlayers];
+            _Spawner.RepopulateAvailableCardList();
 
             for (var i = 0; i < _GameModeController.NumOfPlayers; i++)
             {
@@ -132,9 +133,36 @@
             handComponent.Initialize(_Inspect);
         }
 
+        private void ResetReferences()
+        {
+            _P1Hand = null;
+            _P2Hand = null;
+            _P3Hand = null;
+            _P4Hand = null;
+
+            _Draw = null;
+            _Discard = null;
+            _Inspect = null;
+
+            _PlayerHands = null;
+
+            _CardCollections.Reset();
+        }
+
         private void OnGameModeChanged(object sender, GameModeController.OnGameModeChangedArgs args)
         {
-            if(args.Mode == GameModeController.GameMode.Setup) { Timing.RunCoroutine(SetupCoroutine()); }
+            switch (args.Mode)
+            {
+                case GameModeController.GameMode.Setup:
+                    Timing.RunCoroutine(SetupCoroutine());
+                    break;
+                case GameModeController.GameMode.WakeUp:
+                    _Spawner.DestroyCards();
+                    ResetReferences();
+                    break;
+                default:
+                    break;
+            }
         }
         #endregion Private Methods
     }
